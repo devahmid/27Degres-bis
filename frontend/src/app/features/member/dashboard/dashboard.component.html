@@ -1,0 +1,191 @@
+<div class="max-w-6xl mx-auto px-4">
+  <div class="grid lg:grid-cols-3 gap-8">
+  
+  <!-- Main Content -->
+  <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Cotisation Status Card -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-2xl font-bold text-dark mb-6">Statut de cotisation</h3>
+          
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <ng-container *ngIf="cotisationStatus$ | async as status; else noStatus">
+              <div [ngClass]="{
+                'bg-gradient-to-r from-green-500 to-green-600': status.status === 'paid',
+                'bg-gradient-to-r from-secondary to-yellow-500': status.status === 'pending',
+                'bg-gradient-to-r from-red-500 to-red-600': status.status === 'overdue'
+              }" class="text-white p-6 rounded-xl">
+                <div class="flex items-center justify-between mb-4">
+                  <h4 class="text-lg font-semibold">Cotisation {{ currentYear }}</h4>
+                  <mat-icon class="text-2xl">check_circle</mat-icon>
+                </div>
+                <p class="text-2xl font-bold mb-2">
+                  <span *ngIf="status.status === 'paid'">À jour</span>
+                  <span *ngIf="status.status === 'pending'">En attente</span>
+                  <span *ngIf="status.status === 'overdue'">En retard</span>
+                </p>
+                <p class="text-sm opacity-90" *ngIf="status.paymentDate">
+                  Payée le {{ status.paymentDate | dateFormat }}
+                </p>
+                <p class="text-sm opacity-90" *ngIf="!status.paymentDate">
+                  Montant : {{ status.amount }} €
+                </p>
+              </div>
+            </ng-container>
+            <ng-template #noStatus>
+              <div class="bg-gradient-to-r from-gray-400 to-gray-500 text-white p-6 rounded-xl">
+                <div class="flex items-center justify-between mb-4">
+                  <h4 class="text-lg font-semibold">Cotisation {{ currentYear }}</h4>
+                  <mat-icon class="text-2xl">info</mat-icon>
+                </div>
+                <p class="text-2xl font-bold mb-2">Non payée</p>
+                <p class="text-sm opacity-90">Montant : 25 €</p>
+              </div>
+            </ng-template>
+            
+            <div class="bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-300">
+              <div class="text-center">
+                <mat-icon class="text-4xl text-gray-400 mb-4">download</mat-icon>
+                <h4 class="font-semibold text-dark mb-2">Reçu de paiement</h4>
+                <button mat-button color="primary" class="font-medium">
+                  Télécharger le PDF
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Payment History -->
+          <div>
+            <h4 class="text-lg font-semibold text-dark mb-4">Historique des paiements</h4>
+            <div class="space-y-3">
+              <ng-container *ngIf="cotisationStatus$ | async as status">
+                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p class="font-medium text-dark">Cotisation {{ currentYear }}</p>
+                    <p class="text-sm text-gray-600" *ngIf="status.paymentDate">
+                      Paiement - {{ status.paymentDate | dateFormat }}
+                    </p>
+                    <p class="text-sm text-gray-600" *ngIf="!status.paymentDate">
+                      En attente de paiement
+                    </p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-semibold text-accent">{{ status.amount || 25 }},00 €</p>
+                    <app-badge-status [status]="status.status"></app-badge-status>
+                  </div>
+                </div>
+              </ng-container>
+              <p *ngIf="!(cotisationStatus$ | async)" class="text-gray-500 text-center py-4">
+                Aucun historique disponible
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-2xl font-bold text-dark mb-6">Mes Événements</h3>
+          <div class="space-y-4">
+            <div *ngFor="let event of upcomingEvents$ | async" class="border-l-4 border-primary pl-4">
+              <h4 class="font-medium text-dark">{{ event.title }}</h4>
+              <p class="text-sm text-gray-600">{{ event.startDate | dateFormat }} - {{ event.location }}</p>
+              <button mat-button color="primary" [routerLink]="['/events', event.id]" class="mt-2">
+                Voir détails
+              </button>
+            </div>
+            <p *ngIf="(upcomingEvents$ | async)?.length === 0" class="text-gray-500 text-center py-4">
+              Aucun événement à venir
+            </p>
+          </div>
+        </div>
+
+        <!-- Recent News -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-2xl font-bold text-dark mb-6">Dernières Actualités</h3>
+          <div class="space-y-4">
+            <div *ngFor="let post of recentNews$ | async" class="border-l-4 border-accent pl-4">
+              <h4 class="font-medium text-dark">{{ post.title }}</h4>
+              <p class="text-sm text-gray-600 mb-2">{{ (post.excerpt || post.content) | truncate:100 }}</p>
+              <button mat-button color="primary" [routerLink]="['/news', post.slug]">
+                Lire la suite
+              </button>
+            </div>
+            <p *ngIf="(recentNews$ | async)?.length === 0" class="text-gray-500 text-center py-4">
+              Aucune actualité récente
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-6">
+        
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-lg font-semibold text-dark mb-4">Actions rapides</h3>
+          <div class="space-y-3">
+            <button mat-raised-button color="primary" routerLink="/events" class="w-full">
+              <mat-icon class="mr-2">event</mat-icon>
+              S'inscrire à un événement
+            </button>
+            <button mat-stroked-button color="primary" routerLink="/member/directory" class="w-full">
+              <mat-icon class="mr-2">people</mat-icon>
+              Voir l'annuaire
+            </button>
+            <button mat-stroked-button routerLink="/member/documents" class="w-full">
+              <mat-icon class="mr-2">download</mat-icon>
+              Télécharger documents
+            </button>
+          </div>
+        </div>
+
+        <!-- Member Stats -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-lg font-semibold text-dark mb-4">Votre participation</h3>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Événements participés</span>
+              <span class="font-semibold text-primary">{{ (upcomingEvents$ | async)?.length || 0 }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Années d'adhésion</span>
+              <span class="font-semibold text-primary">
+                {{ ((currentUser$ | async)?.createdAt | dateFormat:'yyyy') ? (currentYear - +((currentUser$ | async)?.createdAt | dateFormat:'yyyy')) : 1 }}
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Dernière connexion</span>
+              <span class="font-semibold text-dark">Aujourd'hui</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Privacy Settings -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-lg font-semibold text-dark mb-4">Confidentialité</h3>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-dark">Visible dans l'annuaire</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium"
+                    [ngClass]="{
+                      'bg-accent text-white': (currentUser$ | async)?.consentAnnuaire,
+                      'bg-gray-300 text-dark': !(currentUser$ | async)?.consentAnnuaire
+                    }">
+                {{ (currentUser$ | async)?.consentAnnuaire ? 'ON' : 'OFF' }}
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-dark">Notifications email</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium"
+                    [ngClass]="{
+                      'bg-accent text-white': (currentUser$ | async)?.consentNewsletter,
+                      'bg-gray-300 text-dark': !(currentUser$ | async)?.consentNewsletter
+                    }">
+                {{ (currentUser$ | async)?.consentNewsletter ? 'ON' : 'OFF' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>

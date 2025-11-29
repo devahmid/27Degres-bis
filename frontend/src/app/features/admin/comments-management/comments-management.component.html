@@ -1,0 +1,126 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold mb-2 text-dark">Gestion des Commentaires</h1>
+    <p class="text-gray-600">Approuvez ou supprimez les commentaires sur les actualités</p>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="mb-6">
+    <mat-card-content>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="relative">
+          <label class="block text-dark font-medium mb-2">Rechercher</label>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Contenu, auteur, article..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all pl-10"
+          />
+          <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 mt-2">search</mat-icon>
+        </div>
+
+        <div>
+          <label class="block text-dark font-medium mb-2">Statut</label>
+          <select
+            [(ngModel)]="filterApproved"
+            (ngModelChange)="onSearchChange()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white"
+          >
+            <option value="">Tous</option>
+            <option value="approved">Approuvés</option>
+            <option value="unapproved">En attente d'approbation</option>
+          </select>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Comments Table -->
+  <mat-card>
+    <mat-card-content>
+      <div class="overflow-x-auto">
+        <table mat-table [dataSource]="(filteredComments$ | async) || []" class="w-full min-w-[800px]">
+          <!-- Post Column -->
+          <ng-container matColumnDef="post">
+            <th mat-header-cell *matHeaderCellDef>Article</th>
+            <td mat-cell *matCellDef="let comment">
+              <a *ngIf="comment.post" [routerLink]="['/news', comment.post.slug]" class="text-primary hover:underline">
+                {{ comment.post.title }}
+              </a>
+              <span *ngIf="!comment.post" class="text-gray-400">N/A</span>
+            </td>
+          </ng-container>
+
+          <!-- User Column -->
+          <ng-container matColumnDef="user">
+            <th mat-header-cell *matHeaderCellDef>Auteur</th>
+            <td mat-cell *matCellDef="let comment">
+              <div *ngIf="comment.user">
+                <p class="font-medium">{{ comment.user.firstName }} {{ comment.user.lastName }}</p>
+                <p class="text-sm text-gray-500">{{ comment.user.email }}</p>
+              </div>
+              <span *ngIf="!comment.user" class="text-gray-400">Anonyme</span>
+            </td>
+          </ng-container>
+
+          <!-- Content Column -->
+          <ng-container matColumnDef="content">
+            <th mat-header-cell *matHeaderCellDef>Commentaire</th>
+            <td mat-cell *matCellDef="let comment">
+              <p class="max-w-md truncate">{{ comment.content }}</p>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Statut</th>
+            <td mat-cell *matCellDef="let comment">
+              <mat-chip [class]="comment.isApproved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'">
+                {{ comment.isApproved ? 'Approuvé' : 'En attente' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Created At Column -->
+          <ng-container matColumnDef="createdAt">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let comment">{{ comment.createdAt | dateFormat }}</td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let comment">
+              <button mat-icon-button [matMenuTriggerFor]="commentMenu" [matMenuTriggerData]="{comment: comment}" type="button">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell" colspan="6">Aucun commentaire trouvé correspondant à votre recherche.</td>
+          </tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Comment Actions Menu -->
+  <mat-menu #commentMenu="matMenu" [hasBackdrop]="false">
+    <ng-template matMenuContent let-comment="comment">
+      <button mat-menu-item (click)="approveComment(comment)" *ngIf="!comment.isApproved">
+        <mat-icon>check_circle</mat-icon>
+        <span>Approuver</span>
+      </button>
+      <button mat-menu-item (click)="deleteComment(comment)" class="text-red-600">
+        <mat-icon>delete</mat-icon>
+        <span>Supprimer</span>
+      </button>
+    </ng-template>
+  </mat-menu>
+</div>
+

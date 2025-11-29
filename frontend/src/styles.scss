@@ -1,0 +1,951 @@
+@use '@angular/material' as mat;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Angular Material Theme
+$primary-palette: mat.define-palette(mat.$orange-palette, 600);
+$accent-palette: mat.define-palette(mat.$amber-palette, 500);
+$warn-palette: mat.define-palette(mat.$red-palette);
+
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary-palette,
+    accent: $accent-palette,
+    warn: $warn-palette,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-themes($theme);
+
+// Fix Material menu and dialog z-index to appear above footer and all other elements
+// CRITICAL: These styles must be global (not scoped) to work properly
+.cdk-overlay-container {
+  z-index: 99999 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  // Ensure container doesn't interfere with menu positioning
+  transform: none !important;
+}
+
+// Overlay pane - different handling for menus vs dialogs
+.cdk-overlay-pane {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+  
+  // For dialogs - centered positioning
+  &[class*="mat-mdc-dialog"],
+  &[class*="dialog"] {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  
+  // For menus - ABSOLUTELY NO positioning styles - let Angular Material handle it completely
+  // Don't add ANY position, top, left, transform, etc. here
+}
+
+.mat-mdc-menu-panel {
+  z-index: 99999 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  // NO positioning styles - let Angular Material handle it completely
+}
+
+// CRITICAL: Remove ALL positioning styles for menus - let Angular Material handle it completely
+// Don't add any positioning styles here - Angular Material will calculate them
+
+// Material Dialog styles - ensure they appear above everything
+.mat-mdc-dialog-container {
+  z-index: 100000 !important;
+  position: relative !important;
+  display: block !important;
+}
+
+.cdk-overlay-pane.mat-mdc-dialog-panel,
+.cdk-overlay-pane[class*="mat-mdc-dialog"],
+.cdk-overlay-pane[class*="dialog"] {
+  z-index: 100000 !important;
+  position: fixed !important;
+  max-height: 90vh !important;
+  max-width: 90vw !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: auto !important;
+}
+
+// Ensure dialog backdrop appears correctly
+.cdk-overlay-backdrop {
+  z-index: 99998 !important;
+  background-color: rgba(0, 0, 0, 0.32) !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: auto !important;
+}
+
+.cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+  z-index: 99998 !important;
+}
+
+// CRITICAL: Hide backdrop for menus (menus don't need backdrop)
+.cdk-overlay-backdrop:has(+ .cdk-overlay-pane .mat-mdc-menu-panel),
+.cdk-overlay-backdrop:has(~ .cdk-overlay-pane .mat-mdc-menu-panel) {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+// Alternative: Hide backdrop when menu panel is present
+.cdk-overlay-container:has(.mat-mdc-menu-panel) .cdk-overlay-backdrop {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+// Ensure all overlays are above footer
+::ng-deep {
+  .cdk-overlay-container {
+    z-index: 99999 !important;
+  }
+
+  // Menu overlays - CRITICAL: NO positioning styles - let Angular Material handle it completely
+  .cdk-overlay-pane:has(.mat-mdc-menu-panel),
+  .cdk-overlay-pane:not([class*="dialog"]):not([class*="mat-mdc-dialog"]) {
+    z-index: 99999 !important;
+    // NO position, top, left, transform, max-width, max-height - Angular Material will calculate
+  }
+  
+  // Dialog overlays - centered (keep these styles)
+  .cdk-overlay-pane[class*="dialog"],
+  .cdk-overlay-pane[class*="mat-mdc-dialog"] {
+    z-index: 100000 !important;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  
+  // Hide backdrop for menus - menus don't need backdrop
+  .cdk-overlay-container:has(.mat-mdc-menu-panel) .cdk-overlay-backdrop {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+  
+  // Menu panels - no forced positioning - let Angular Material handle it completely
+  .mat-mdc-menu-panel {
+    // Let Angular Material handle positioning - no styles here
+  }
+
+  .mat-mdc-dialog-container {
+    z-index: 100000 !important;
+  }
+
+  .cdk-overlay-backdrop {
+    z-index: 99998 !important;
+  }
+}
+
+// CRITICAL: Remove icon button backgrounds globally
+::ng-deep {
+  // Target ALL Material icon buttons in form fields
+  .mat-mdc-form-field {
+    .mat-mdc-form-field-icon-container {
+      background: transparent !important;
+      
+      button,
+      .mdc-icon-button,
+      .mat-mdc-icon-button {
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        border-radius: 0 !important;
+        
+        &::before,
+        &::after {
+          display: none !important;
+          background: transparent !important;
+        }
+      }
+    }
+    
+    .mdc-text-field__icon--leading,
+    .mdc-text-field__icon--trailing {
+      background: transparent !important;
+      
+      button,
+      .mdc-icon-button,
+      .mat-mdc-icon-button {
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        border-radius: 0 !important;
+        
+        &::before,
+        &::after {
+          display: none !important;
+          background: transparent !important;
+        }
+      }
+    }
+    
+    mat-icon[matPrefix],
+    mat-icon[matSuffix] {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
+  
+  // Global override for icon buttons ONLY in form fields (not header buttons)
+  .mat-mdc-form-field {
+    .mdc-icon-button,
+    .mat-mdc-icon-button {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      
+      &::before {
+        display: none !important;
+        background: transparent !important;
+      }
+    }
+  }
+}
+
+// Global Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// Remove Material icon backgrounds globally
+mat-icon {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  
+  // Remove any Material Design icon container backgrounds
+  &::before,
+  &::after {
+    background: transparent !important;
+  }
+  
+  // Remove MDC icon button backgrounds
+  &.mdc-icon-button {
+    background: transparent !important;
+  }
+}
+
+// Remove backgrounds from Material Design Components
+.mdc-icon-button,
+.mdc-icon-button__icon {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+// Remove any container backgrounds in form fields
+.mat-mdc-form-field {
+  .mdc-text-field {
+    background: transparent !important;
+    
+    .mdc-text-field__input {
+      background: transparent !important;
+    }
+    
+    // Icon containers - remove all backgrounds and borders
+    .mdc-text-field__icon--leading,
+    .mdc-text-field__icon--trailing {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      
+      .mat-icon {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+    }
+  }
+  
+  // Additional Material 3 specific selectors
+  .mat-mdc-form-field-icon-container {
+    .mdc-text-field__icon {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      
+      &::before,
+      &::after {
+        display: none !important;
+      }
+    }
+  }
+}
+
+// Global override for Material icon buttons in forms
+mat-form-field {
+  .mat-mdc-icon-button {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    
+    .mat-icon {
+      background: transparent !important;
+    }
+  }
+}
+
+// Force remove all backgrounds from icon containers in Material 3
+.mdc-text-field__icon--leading,
+.mdc-text-field__icon--trailing,
+.mat-mdc-form-field-icon-prefix,
+.mat-mdc-form-field-icon-suffix {
+  background-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  
+  &::before,
+  &::after {
+    display: none !important;
+    background: transparent !important;
+  }
+  
+  .mat-icon,
+  mat-icon {
+    background-color: transparent !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+// Specific class for form icons
+.form-icon {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  
+  &::before,
+  &::after {
+    display: none !important;
+  }
+}
+
+// Target Material 3 icon button containers
+.mdc-icon-button,
+.mdc-icon-button__icon,
+.mat-mdc-icon-button {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  
+  &::before {
+    display: none !important;
+  }
+  
+  .mat-icon {
+    background: transparent !important;
+  }
+}
+
+// Additional Material 3 specific fixes - AGGRESSIVE APPROACH
+.mat-mdc-form-field {
+  .mdc-text-field {
+    .mdc-text-field__icon {
+      background-color: transparent !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      
+      &::before {
+        display: none !important;
+      }
+    }
+    
+    // Remove ripple effects that create gray backgrounds
+    .mdc-ripple-surface {
+      &::before,
+      &::after {
+        display: none !important;
+      }
+    }
+  }
+  
+  // Remove all button-like styling from icon containers
+  .mat-mdc-form-field-icon-container {
+    button,
+    .mdc-icon-button,
+    .mat-mdc-icon-button {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      min-width: auto !important;
+      width: auto !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      
+      &::before,
+      &::after {
+        display: none !important;
+        background: transparent !important;
+      }
+      
+      .mat-icon {
+        background: transparent !important;
+        border: none !important;
+      }
+    }
+  }
+  
+  // Target the actual icon button wrapper
+  .mdc-text-field__icon--leading,
+  .mdc-text-field__icon--trailing {
+    button,
+    .mdc-icon-button,
+    .mat-mdc-icon-button {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      min-width: 0 !important;
+      width: auto !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      
+      &::before {
+        display: none !important;
+        background: transparent !important;
+      }
+    }
+  }
+}
+
+// Global override for ALL Material icon buttons
+.mdc-icon-button,
+.mat-mdc-icon-button {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  
+  &::before {
+    display: none !important;
+    background: transparent !important;
+  }
+  
+  .mat-icon {
+    background: transparent !important;
+  }
+}
+
+// Target any element with icon-button classes
+[class*="icon-button"],
+[class*="mdc-icon-button"],
+[class*="mat-mdc-icon-button"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  
+  &::before {
+    display: none !important;
+  }
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: #FAFAFA;
+  color: #1A3B5C;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+}
+
+// Custom utility classes
+.status-paid {
+  background-color: #7CB342 !important;
+  color: white !important;
+}
+
+.status-pending {
+  background-color: #F5B800 !important;
+  color: #1A3B5C !important;
+}
+
+.status-overdue {
+  background-color: #E94E1B !important;
+  color: white !important;
+}
+
+.success-snackbar {
+  background-color: #7CB342 !important;
+  color: white !important;
+}
+
+.error-snackbar {
+  background-color: #E94E1B !important;
+  color: white !important;
+}
+
+// Form improvements
+mat-form-field {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  display: block;
+  
+  .mat-mdc-form-field-subscript-wrapper {
+    margin-top: 0.5rem;
+  }
+  
+  // Remove any container backgrounds
+  .mat-mdc-form-field-icon-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  // Icon prefix styling - integrated naturally
+  .mat-mdc-form-field-icon-prefix {
+    padding-right: 12px;
+    padding-left: 0;
+    
+    mat-icon {
+      color: rgba(0, 0, 0, 0.6) !important;
+      width: 24px !important;
+      height: 24px !important;
+      font-size: 24px !important;
+      margin: 0 !important;
+    }
+  }
+  
+  // Direct icon prefix styling (fallback)
+  mat-icon[matPrefix] {
+    color: rgba(0, 0, 0, 0.6) !important;
+    margin-right: 12px !important;
+    margin-left: 0 !important;
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 24px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  // Input wrapper improvements
+  .mat-mdc-text-field-wrapper {
+    padding-bottom: 0;
+    min-height: 56px;
+    background: transparent !important;
+    
+    // Remove any inner container backgrounds
+    .mdc-notched-outline,
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      background: transparent !important;
+    }
+  }
+  
+  // Label improvements
+  .mat-mdc-form-field-label {
+    font-size: 14px !important;
+  }
+  
+  // Input text improvements
+  input.mat-mdc-input-element,
+  textarea.mat-mdc-input-element {
+    font-size: 16px !important;
+    padding: 12px 0 !important;
+    line-height: 1.5 !important;
+    color: rgba(0, 0, 0, 0.87) !important;
+  }
+  
+  // Textarea specific
+  textarea.mat-mdc-input-element {
+    min-height: 120px;
+    resize: vertical;
+    padding-top: 12px !important;
+  }
+  
+  // Remove placeholder styling issues
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(0, 0, 0, 0.38) !important;
+    opacity: 1;
+  }
+  
+  // Error message styling
+  .mat-mdc-form-field-error {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+}
+
+mat-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  
+  mat-card-header {
+    padding: 2rem 2rem 1.5rem;
+    background: linear-gradient(135deg, #E94E1B 0%, #F5B800 100%);
+    color: white;
+    
+    mat-card-title {
+      margin: 0;
+      font-weight: 600;
+      color: white !important;
+      font-size: 1.75rem !important;
+    }
+    
+    p {
+      margin: 0.5rem 0 0 0;
+      font-size: 0.95rem;
+    }
+    
+    mat-card-subtitle {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+  }
+  
+  mat-card-content {
+    padding: 2rem;
+  }
+  
+  mat-card-actions {
+    padding: 1rem 2rem 2rem;
+  }
+  
+  mat-card-footer {
+    padding: 1.5rem 2rem;
+    background-color: #f5f5f5;
+    border-top: 1px solid #e0e0e0;
+    
+    p {
+      margin: 0;
+    }
+  }
+  
+  // Cards without gradient header (like news cards)
+  &:not(.shadow-xl) mat-card-header {
+    background: transparent;
+    color: inherit;
+    padding: 1rem 1.5rem 0.5rem;
+    
+    mat-card-title {
+      color: #1A3B5C !important;
+    }
+    
+    mat-card-subtitle {
+      color: rgba(26, 59, 92, 0.7) !important;
+    }
+  }
+}
+
+// Button improvements
+button[mat-raised-button] {
+  padding: 12px 32px !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  text-transform: none !important;
+  letter-spacing: 0.3px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  min-height: 48px !important;
+  line-height: 1.5 !important;
+  
+  mat-icon {
+    margin-right: 8px !important;
+    margin-left: 0 !important;
+    vertical-align: middle;
+  }
+  
+  span {
+    vertical-align: middle;
+  }
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  // Full width buttons
+  &.w-full {
+    width: 100%;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+}
+
+button[mat-button] {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  
+  &:hover {
+    background-color: rgba(233, 78, 27, 0.1) !important;
+  }
+}
+
+// Input improvements
+.mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    border-radius: 8px !important;
+    background-color: transparent !important;
+  }
+  
+  .mat-mdc-form-field-focus-overlay {
+    background-color: rgba(233, 78, 27, 0.05) !important;
+  }
+  
+  // Remove any background from prefix/suffix containers
+  .mat-mdc-form-field-icon-prefix,
+  .mat-mdc-form-field-icon-suffix {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    
+    .mat-icon {
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+    }
+  }
+  
+  // Ensure icons don't have background squares
+  mat-icon[matPrefix],
+  mat-icon[matSuffix] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  // Outline appearance improvements
+  &.mat-form-field-appearance-outline {
+    .mat-mdc-text-field-wrapper {
+      .mat-mdc-form-field-outline {
+        color: rgba(0, 0, 0, 0.12) !important;
+        border-width: 1px !important;
+      }
+      
+      .mat-mdc-form-field-outline-thick {
+        color: #E94E1B !important;
+        border-width: 2px !important;
+      }
+    }
+    
+    &.mat-focused {
+      .mat-mdc-form-field-outline-thick {
+        color: #E94E1B !important;
+      }
+      
+      mat-label {
+        color: #E94E1B !important;
+      }
+      
+      .mat-mdc-form-field-icon-prefix mat-icon,
+      mat-icon[matPrefix] {
+        color: #E94E1B !important;
+      }
+    }
+    
+    // Remove gray background from icon containers
+    .mat-mdc-form-field-icon-prefix,
+    .mat-mdc-form-field-icon-suffix {
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+    }
+  }
+  
+  // Error state
+  &.mat-form-field-invalid {
+    .mat-mdc-form-field-outline-thick {
+      color: #f44336 !important;
+    }
+    
+    mat-label {
+      color: #f44336 !important;
+    }
+  }
+}
+
+// Checkbox improvements
+mat-checkbox {
+  margin: 0.5rem 0 !important;
+  display: block !important;
+  
+  .mdc-checkbox {
+    .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background {
+      background-color: #E94E1B !important;
+      border-color: #E94E1B !important;
+    }
+    
+    .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+      background-color: #E94E1B !important;
+      border-color: #E94E1B !important;
+    }
+  }
+  
+  .mdc-form-field {
+    label {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  }
+}
+
+// Table improvements
+mat-table {
+  border-radius: 8px;
+  overflow: hidden;
+  
+  th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: #1A3B5C;
+  }
+  
+  tr:hover {
+    background-color: rgba(233, 78, 27, 0.05);
+  }
+}
+
+// Card hover effects - only for cards without shadow-xl (news cards)
+mat-card:not(.shadow-xl) {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px);
+  }
+}
+
+// Form cards should not have hover effect
+mat-card.shadow-xl {
+  transition: none;
+  
+  &:hover {
+    transform: none;
+  }
+}
+
+// Link improvements
+a {
+  transition: color 0.3s ease;
+  color: #E94E1B;
+  text-decoration: none;
+  
+  &:hover {
+    color: #c43e15 !important;
+    text-decoration: underline;
+  }
+  
+  // Links in footer/cards
+  mat-card-footer &,
+  mat-card-content & {
+    color: #E94E1B;
+  }
+}
+
+// Form spacing improvements
+form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  
+  mat-form-field {
+    margin-bottom: 0;
+    width: 100%;
+  }
+  
+  button[mat-raised-button] {
+    margin-top: 1rem;
+    align-self: stretch;
+  }
+  
+  // Grid layouts in forms
+  .grid {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    
+    mat-form-field {
+      width: 100%;
+    }
+  }
+  
+  // Checkbox container
+  .bg-gray-50 {
+    margin: 1rem 0;
+    
+    mat-checkbox {
+      display: block;
+      margin-bottom: 0.75rem;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+

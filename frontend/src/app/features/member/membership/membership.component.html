@@ -1,0 +1,83 @@
+<div class="max-w-6xl mx-auto px-4">
+  <h1 class="text-3xl font-bold mb-8 text-dark">Mes Cotisations</h1>
+  
+  <!-- Statut actuel -->
+  <mat-card class="mb-6">
+    <mat-card-header>
+      <mat-card-title>Cotisation {{ currentYear }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <ng-container *ngIf="currentYearStatus$ | async as status; else noStatus">
+        <app-badge-status [status]="status.status"></app-badge-status>
+        <p class="mt-4">Montant : {{ status.amount }} €</p>
+        <p *ngIf="status.paymentDate" class="mt-2">
+          Payée le {{ status.paymentDate | dateFormat }}
+        </p>
+      </ng-container>
+      <ng-template #noStatus>
+        <p>Aucune cotisation enregistrée pour cette année.</p>
+        <p class="mt-2">Montant : 25 €</p>
+      </ng-template>
+    </mat-card-content>
+    <mat-card-actions>
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="payCotisation()"
+        *ngIf="(currentYearStatus$ | async)?.status !== 'paid'">
+        Payer ma cotisation
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Historique -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Historique</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="(history$ | async) || []" class="w-full">
+        <ng-container matColumnDef="year">
+          <th mat-header-cell *matHeaderCellDef>Année</th>
+          <td mat-cell *matCellDef="let cotisation">{{ cotisation.year }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Montant</th>
+          <td mat-cell *matCellDef="let cotisation">{{ cotisation.amount }} €</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Statut</th>
+          <td mat-cell *matCellDef="let cotisation">
+            <app-badge-status [status]="cotisation.status"></app-badge-status>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="paymentDate">
+          <th mat-header-cell *matHeaderCellDef>Date de paiement</th>
+          <td mat-cell *matCellDef="let cotisation">
+            {{ cotisation.paymentDate ? (cotisation.paymentDate | dateFormat) : '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="receipt">
+          <th mat-header-cell *matHeaderCellDef>Reçu</th>
+          <td mat-cell *matCellDef="let cotisation">
+            <button 
+              mat-button 
+              color="primary" 
+              (click)="downloadReceipt(cotisation)"
+              *ngIf="cotisation.receiptUrl">
+              Télécharger
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>
+

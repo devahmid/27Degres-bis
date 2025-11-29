@@ -1,0 +1,33 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-8 text-dark">Actualités</h1>
+  
+  <div class="mb-6">
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Rechercher</mat-label>
+      <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" placeholder="Rechercher dans les actualités...">
+    </mat-form-field>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <mat-card *ngFor="let post of filteredPosts$ | async" class="hover:shadow-lg transition-shadow">
+      <img *ngIf="post.featuredImage" mat-card-image [src]="post.featuredImage" [alt]="post.title">
+      <mat-card-header>
+        <mat-card-title>{{ post.title }}</mat-card-title>
+        <mat-card-subtitle>{{ post.publishDate | dateFormat }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ post.excerpt || post.content | truncate:150 }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary" [routerLink]="['/news', post.slug]">
+          Lire la suite
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <p *ngIf="(filteredPosts$ | async)?.length === 0" class="text-center text-gray-500 mt-8">
+    Aucune actualité trouvée.
+  </p>
+</div>
+

@@ -1,0 +1,76 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-light to-secondary/10 py-12 px-4">
+  <div class="max-w-md w-full">
+    <mat-card class="shadow-xl">
+      <mat-card-header>
+        <mat-card-title class="text-center text-3xl font-bold">Connexion</mat-card-title>
+        <p class="text-center text-white/90 mt-2">Accédez à votre espace membre</p>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mt-4 space-y-6">
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <div class="flex items-center">
+              <mat-icon class="text-red-500 mr-2">error</mat-icon>
+              <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-dark font-medium mb-2">Email *</label>
+            <input 
+              type="email" 
+              formControlName="email" 
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              placeholder="votre@email.com">
+            <div *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              L'email est requis
+            </div>
+            <div *ngIf="loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              Email invalide
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-dark font-medium mb-2">Mot de passe *</label>
+            <input 
+              type="password" 
+              formControlName="password" 
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              placeholder="••••••••">
+            <div *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              Le mot de passe est requis
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <a routerLink="/auth/forgot-password" class="text-sm text-primary hover:underline">
+              Mot de passe oublié ?
+            </a>
+          </div>
+
+          <button 
+            type="submit"
+            [disabled]="loginForm.invalid || isSubmitting"
+            class="w-full bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-secondary transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <mat-icon *ngIf="!isSubmitting" class="mr-2 align-middle">login</mat-icon>
+            <span>{{ isSubmitting ? 'Connexion...' : 'Se connecter' }}</span>
+          </button>
+        </form>
+      </mat-card-content>
+      <mat-card-footer class="text-center">
+        <p class="text-gray-600">
+          Pas encore membre ? 
+          <a routerLink="/auth/register" class="text-primary font-semibold hover:underline ml-1">
+            Créer un compte
+          </a>
+        </p>
+      </mat-card-footer>
+    </mat-card>
+  </div>
+</div>
+

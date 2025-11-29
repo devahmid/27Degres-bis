@@ -1,0 +1,100 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-4xl font-bold mb-2 text-dark">Gestion de la Galerie</h1>
+      <p class="text-gray-600">Gérez toutes les images de la photothèque</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="openAddDialog()">
+      <mat-icon class="mr-2">add_photo_alternate</mat-icon>
+      Ajouter une image
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="mb-6">
+    <mat-card-content>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="relative">
+          <label class="block text-dark font-medium mb-2">Rechercher</label>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Légende, catégorie..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all pl-10"
+          />
+          <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 mt-2">search</mat-icon>
+        </div>
+
+        <div>
+          <label class="block text-dark font-medium mb-2">Visibilité</label>
+          <select
+            [(ngModel)]="filterVisibility"
+            (ngModelChange)="onSearchChange()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white"
+          >
+            <option value="all">Toutes</option>
+            <option value="public">Publiques</option>
+            <option value="private">Privées</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-dark font-medium mb-2">Catégorie</label>
+          <select
+            [(ngModel)]="filterCategory"
+            (ngModelChange)="onSearchChange()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white"
+          >
+            <option value="">Toutes</option>
+            <option *ngFor="let cat of getCategories()" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Images Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <mat-card *ngFor="let image of filteredImages$ | async" class="relative group">
+      <img [src]="image.imageUrl" [alt]="image.caption || 'Image galerie'" 
+           class="w-full h-64 object-cover rounded-t-lg">
+      <div class="absolute top-2 right-2">
+        <span [ngClass]="{
+          'bg-green-500': image.isPublic,
+          'bg-gray-500': !image.isPublic
+        }" class="px-2 py-1 rounded-full text-white text-xs font-medium">
+          {{ image.isPublic ? 'Public' : 'Privé' }}
+        </span>
+      </div>
+      <mat-card-content>
+        <p *ngIf="image.caption" class="font-medium mb-1">{{ image.caption }}</p>
+        <p *ngIf="image.category" class="text-sm text-gray-500 mb-2">{{ image.category }}</p>
+        <p class="text-xs text-gray-400">{{ image.createdAt | dateFormat }}</p>
+      </mat-card-content>
+      <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <button mat-icon-button [matMenuTriggerFor]="imageMenu" [matMenuTriggerData]="{image: image}" type="button" class="text-white">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+      </div>
+    </mat-card>
+  </div>
+
+  <p *ngIf="(filteredImages$ | async)?.length === 0" class="text-center text-gray-500 mt-8">
+    Aucune image trouvée.
+  </p>
+
+  <!-- Image Actions Menu -->
+  <mat-menu #imageMenu="matMenu" [hasBackdrop]="false">
+    <ng-template matMenuContent let-image="image">
+      <button mat-menu-item (click)="editImage(image)">
+        <mat-icon>edit</mat-icon>
+        <span>Modifier</span>
+      </button>
+      <button mat-menu-item (click)="deleteImage(image)" class="text-red-600">
+        <mat-icon>delete</mat-icon>
+        <span>Supprimer</span>
+      </button>
+    </ng-template>
+  </mat-menu>
+</div>

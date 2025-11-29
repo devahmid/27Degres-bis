@@ -1,0 +1,157 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-4xl font-bold mb-2 text-dark">Gestion des Actualités</h1>
+      <p class="text-gray-600">Gérez toutes les actualités de l'association</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="openAddDialog()">
+      <mat-icon class="mr-2">add</mat-icon>
+      Ajouter une actualité
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="mb-6">
+    <mat-card-content>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="relative">
+          <label class="block text-dark font-medium mb-2">Rechercher</label>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Titre, contenu..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all pl-10"
+          />
+          <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 mt-2">search</mat-icon>
+        </div>
+
+        <div>
+          <label class="block text-dark font-medium mb-2">Catégorie</label>
+          <select
+            [(ngModel)]="filterCategory"
+            (ngModelChange)="onSearchChange()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white"
+          >
+            <option value="">Toutes</option>
+            <option value="Événements">Événements</option>
+            <option value="Vie associative">Vie associative</option>
+            <option value="Partenariats">Partenariats</option>
+            <option value="Témoignages">Témoignages</option>
+            <option value="Communauté">Communauté</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-dark font-medium mb-2">Statut</label>
+          <select
+            [(ngModel)]="filterStatus"
+            (ngModelChange)="onSearchChange()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white"
+          >
+            <option value="">Tous</option>
+            <option value="draft">Brouillon</option>
+            <option value="published">Publié</option>
+          </select>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Posts Table -->
+  <mat-card>
+    <mat-card-content>
+      <div class="overflow-x-auto">
+        <table mat-table [dataSource]="(filteredPosts$ | async) || []" class="w-full min-w-[800px]">
+          <!-- Title Column -->
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef>Titre</th>
+            <td mat-cell *matCellDef="let post">
+              <div class="flex items-center">
+                <mat-icon class="mr-2 text-gray-400">article</mat-icon>
+                <span>{{ post.title }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Category Column -->
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>Catégorie</th>
+            <td mat-cell *matCellDef="let post">
+              <span class="px-3 py-1 bg-gray-100 rounded text-xs font-medium">
+                {{ post.category || '-' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Author Column -->
+          <ng-container matColumnDef="author">
+            <th mat-header-cell *matHeaderCellDef>Auteur</th>
+            <td mat-cell *matCellDef="let post">
+              {{ post.author ? (post.author.firstName + ' ' + post.author.lastName) : '-' }}
+            </td>
+          </ng-container>
+
+          <!-- Publish Date Column -->
+          <ng-container matColumnDef="publishDate">
+            <th mat-header-cell *matHeaderCellDef>Date de publication</th>
+            <td mat-cell *matCellDef="let post">
+              {{ post.publishDate ? (post.publishDate | dateFormat) : '-' }}
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Statut</th>
+            <td mat-cell *matCellDef="let post">
+              <span [ngClass]="{
+                'bg-green-100 text-green-800': post.status === 'published',
+                'bg-gray-100 text-gray-800': post.status === 'draft'
+              }" class="px-3 py-1 rounded-full text-xs font-medium">
+                {{ getStatusLabel(post.status) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Views Column -->
+          <ng-container matColumnDef="views">
+            <th mat-header-cell *matHeaderCellDef>Vues</th>
+            <td mat-cell *matCellDef="let post">{{ post.views || 0 }}</td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let post">
+              <button mat-icon-button [matMenuTriggerFor]="postMenu" [matMenuTriggerData]="{post: post}" type="button">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell" colspan="7">Aucune actualité trouvée correspondant à votre recherche.</td>
+          </tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Post Actions Menu -->
+  <mat-menu #postMenu="matMenu" [hasBackdrop]="false">
+    <ng-template matMenuContent let-post="post">
+      <button mat-menu-item (click)="editPost(post)">
+        <mat-icon>edit</mat-icon>
+        <span>Modifier</span>
+      </button>
+      <button mat-menu-item (click)="deletePost(post)" class="text-red-600">
+        <mat-icon>delete</mat-icon>
+        <span>Supprimer</span>
+      </button>
+    </ng-template>
+  </mat-menu>
+</div>
+

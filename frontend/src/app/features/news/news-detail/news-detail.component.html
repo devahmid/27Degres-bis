@@ -1,0 +1,56 @@
+<div class="container mx-auto px-4 py-8" *ngIf="post$ | async as post">
+  <mat-card>
+    <img *ngIf="post.featuredImage" mat-card-image [src]="post.featuredImage" [alt]="post.title" class="max-h-96 object-cover">
+    <mat-card-header>
+      <mat-card-title class="text-3xl">{{ post.title }}</mat-card-title>
+      <mat-card-subtitle>
+        Par {{ post.author?.firstName }} {{ post.author?.lastName }} - {{ post.publishDate | dateFormat }}
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div [innerHTML]="post.content" class="prose max-w-none"></div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Commentaires -->
+  <mat-card class="mt-8">
+    <mat-card-header>
+      <mat-card-title>Commentaires</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="authService.isLoggedIn()" class="mb-6">
+        <form [formGroup]="commentForm" (ngSubmit)="onSubmitComment(post.id)">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Ajouter un commentaire</mat-label>
+            <textarea matInput formControlName="content" rows="4" required></textarea>
+            <mat-error *ngIf="commentForm.get('content')?.hasError('required')">
+              Le commentaire est requis
+            </mat-error>
+            <mat-error *ngIf="commentForm.get('content')?.hasError('minlength')">
+              Le commentaire doit contenir au moins 10 caractères
+            </mat-error>
+          </mat-form-field>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            type="submit"
+            [disabled]="commentForm.invalid || isSubmitting">
+            {{ isSubmitting ? 'Publication...' : 'Publier' }}
+          </button>
+        </form>
+      </div>
+
+      <div class="space-y-4">
+        <div *ngFor="let comment of comments$ | async" class="border-b pb-4">
+          <p class="font-semibold">{{ comment.user?.firstName }} {{ comment.user?.lastName }}</p>
+          <p class="text-gray-600">{{ comment.content }}</p>
+          <p class="text-sm text-gray-400">{{ comment.createdAt | dateFormat }}</p>
+        </div>
+        <p *ngIf="(comments$ | async)?.length === 0" class="text-gray-500">
+          Aucun commentaire pour le moment.
+        </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+

@@ -1,0 +1,32 @@
+footer {
+  margin-top: auto;
+  position: relative;
+  z-index: 1 !important; // Lower than menu overlay and dialogs
+}
+
+// Ensure footer doesn't interfere with menu and dialogs
+footer {
+  z-index: 1 !important;
+  position: relative !important;
+}
+
+// Global styles to ensure footer stays below overlays
+::ng-deep {
+  footer {
+    z-index: 1 !important;
+    position: relative !important;
+  }
+  
+  // Make sure footer doesn't capture pointer events when menu or dialog is open
+  .cdk-overlay-backdrop ~ footer,
+  .cdk-overlay-container ~ footer {
+    pointer-events: none !important;
+  }
+  
+  // Ensure footer stays below dialogs - use very low z-index
+  .mat-mdc-dialog-container ~ footer,
+  .cdk-overlay-container ~ footer {
+    z-index: 1 !important;
+  }
+}
+

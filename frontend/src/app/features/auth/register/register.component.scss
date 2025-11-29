@@ -1,0 +1,33 @@
+// Styles spécifiques pour le formulaire d'inscription
+
+::ng-deep {
+  mat-form-field {
+    .mat-mdc-form-field-icon-container {
+      button,
+      .mdc-icon-button,
+      .mat-mdc-icon-button {
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        border-radius: 0 !important;
+        
+        &::before {
+          display: none !important;
+          background: transparent !important;
+        }
+      }
+    }
+    
+    mat-icon[matPrefix] {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
+}

@@ -1,0 +1,97 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+    <h1 class="text-3xl font-bold text-dark">Photothèque</h1>
+    <button mat-raised-button color="primary" (click)="openAddDialog()" class="mt-4 md:mt-0">
+      <mat-icon class="mr-2">add_photo_alternate</mat-icon>
+      Ajouter une image
+    </button>
+  </div>
+  
+  <!-- Filters -->
+  <div class="mb-6 flex flex-wrap gap-4 items-center">
+    <button
+      mat-stroked-button
+      [class.mat-primary]="filterType === 'all'"
+      (click)="setFilterType('all')"
+      class="transition-all">
+      <mat-icon class="mr-2">photo_library</mat-icon>
+      Toutes les photos
+    </button>
+    <button
+      mat-stroked-button
+      [class.mat-primary]="filterType === 'public'"
+      (click)="setFilterType('public')"
+      class="transition-all">
+      <mat-icon class="mr-2">public</mat-icon>
+      Photos publiques
+    </button>
+    <button
+      *ngIf="isAuthenticated"
+      mat-stroked-button
+      [class.mat-primary]="filterType === 'private'"
+      (click)="setFilterType('private')"
+      class="transition-all">
+      <mat-icon class="mr-2">lock</mat-icon>
+      Photos privées
+    </button>
+  </div>
+
+  <!-- Images Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <mat-card *ngFor="let item of getFilteredImages() | async" class="image-card hover:shadow-lg transition-shadow relative group">
+      <div class="relative overflow-hidden">
+        <img 
+          [src]="item.image.imageUrl" 
+          [alt]="item.image.caption || 'Photo'" 
+          class="w-full h-64 object-cover cursor-pointer"
+          (click)="openImageModal(item.image.imageUrl, item.image.caption)">
+        <div class="absolute top-2 right-2">
+          <span [class]="getBadgeClass(item)"
+                class="px-2 py-1 rounded-full text-xs text-white font-semibold">
+            {{ getBadgeText(item) }}
+          </span>
+        </div>
+      </div>
+      <mat-card-content class="p-4">
+        <p *ngIf="item.image.caption" class="font-semibold text-sm mb-1">{{ item.image.caption }}</p>
+        <p *ngIf="getEventTitle(item)" 
+           class="text-xs text-gray-500 mb-1">
+          <mat-icon class="align-middle text-xs">event</mat-icon>
+          {{ getEventTitle(item) }}
+        </p>
+        <p class="text-xs text-gray-400 mb-3">{{ item.image.createdAt | dateFormat }}</p>
+        
+        <!-- Actions buttons pour les images de galerie -->
+        <div *ngIf="isGalleryImage(item)" class="flex gap-2 mt-3 pt-3 border-t border-gray-200">
+          <button mat-stroked-button color="primary" (click)="editImage(item.image)" class="flex-1 text-sm">
+            <mat-icon class="mr-1 text-base">edit</mat-icon>
+            Modifier
+          </button>
+          <button mat-stroked-button color="warn" (click)="deleteImage(item.image)" class="flex-1 text-sm">
+            <mat-icon class="mr-1 text-base">delete</mat-icon>
+            Supprimer
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <p *ngIf="(getFilteredImages() | async)?.length === 0" class="text-center text-gray-500 mt-8">
+    Aucune photo disponible.
+  </p>
+</div>
+
+<!-- Image Modal (simple) -->
+<div *ngIf="selectedImageUrl" 
+     class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+     (click)="closeImageModal()">
+  <div class="max-w-4xl max-h-full" (click)="$event.stopPropagation()">
+    <img [src]="selectedImageUrl" [alt]="selectedImageCaption || 'Photo'" class="max-w-full max-h-[90vh] object-contain">
+    <p *ngIf="selectedImageCaption" class="text-white text-center mt-4">{{ selectedImageCaption }}</p>
+    <button mat-icon-button 
+            class="absolute top-4 right-4 text-white"
+            (click)="closeImageModal()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<!-- Hero Section -->
+<section class="hero bg-gradient-to-br from-primary via-primary/90 to-secondary text-white py-24 relative overflow-hidden">
+  <div class="absolute inset-0 opacity-10">
+    <div class="absolute top-0 left-0 w-96 h-96 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/2 translate-y-1/2"></div>
+  </div>
+  <div class="container mx-auto px-4 text-center relative z-10">
+    <div class="mb-6">
+      <mat-icon class="text-8xl mb-4 opacity-90">wb_sunny</mat-icon>
+    </div>
+    <h1 class="text-6xl font-bold mb-6">Association 27 Degrés</h1>
+    <p class="text-2xl mb-4 font-light">Basse-Ville Génération</p>
+    <p class="text-xl mb-10 max-w-2xl mx-auto opacity-90">Une communauté solidaire et dynamique qui œuvre pour renforcer les liens entre les habitants</p>
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
+      <a mat-raised-button color="accent" routerLink="/auth/register" class="text-dark text-lg px-8 py-3">
+        <mat-icon>person_add</mat-icon>
+        <span class="ml-2">Devenir membre</span>
+      </a>
+      <a mat-stroked-button routerLink="/about" class="text-white border-2 border-white text-lg px-8 py-3">
+        <mat-icon>info</mat-icon>
+        <span class="ml-2">En savoir plus</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Actualités récentes -->
+<section class="py-20 bg-light">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold mb-4 text-dark">Dernières Actualités</h2>
+      <p class="text-xl text-gray-600">Restez informé des dernières nouvelles de l'association</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <mat-card *ngFor="let post of recentPosts$ | async" class="hover:shadow-xl transition-all duration-300 cursor-pointer h-full flex flex-col">
+        <img *ngIf="post.featuredImage" mat-card-image [src]="post.featuredImage" [alt]="post.title" class="h-48 object-cover">
+        <mat-card-header>
+          <mat-card-title class="line-clamp-2">{{ post.title }}</mat-card-title>
+          <mat-card-subtitle class="flex items-center gap-2 mt-2">
+            <mat-icon class="text-sm">calendar_today</mat-icon>
+            <span>{{ post.publishDate | dateFormat }}</span>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="flex-grow">
+          <p class="text-gray-600 line-clamp-3">{{ post.excerpt || post.content | truncate:150 }}</p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button color="primary" [routerLink]="['/news', post.slug]" class="w-full">
+            <span>Lire la suite</span>
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+    <div class="text-center mt-12">
+      <a mat-raised-button color="primary" routerLink="/news" class="px-8">
+        <span>Voir toutes les actualités</span>
+        <mat-icon class="ml-2">arrow_forward</mat-icon>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Prochain événement -->
+<section class="py-20 bg-white" *ngIf="upcomingEvent$ | async as event">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold mb-4 text-dark">Prochain Événement</h2>
+      <p class="text-xl text-gray-600">Ne manquez pas notre prochaine activité</p>
+    </div>
+    <mat-card class="max-w-4xl mx-auto shadow-xl">
+      <img *ngIf="event.featuredImage" mat-card-image [src]="event.featuredImage" [alt]="event.title" class="h-96 object-cover">
+      <mat-card-header>
+        <mat-card-title class="text-3xl">{{ event.title }}</mat-card-title>
+        <mat-card-subtitle class="flex items-center gap-4 mt-4 text-lg">
+          <span class="flex items-center gap-2">
+            <mat-icon>event</mat-icon>
+            {{ event.startDate | dateFormat:'dd MMMM yyyy' }}
+          </span>
+          <span *ngIf="event.location" class="flex items-center gap-2">
+            <mat-icon>location_on</mat-icon>
+            {{ event.location }}
+          </span>
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="text-lg text-gray-700">{{ event.description | truncate:200 }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" [routerLink]="['/events', event.id]" class="px-8">
+          <span>Voir les détails</span>
+          <mat-icon class="ml-2">arrow_forward</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</section>
+
+<!-- Appel à cotisation -->
+<section class="py-20 bg-gradient-to-r from-secondary to-secondary/80 text-dark">
+  <div class="container mx-auto px-4 text-center">
+    <mat-icon class="text-6xl mb-4 opacity-90">group_add</mat-icon>
+    <h2 class="text-4xl font-bold mb-4">Rejoignez-nous !</h2>
+    <p class="text-xl mb-8 max-w-2xl mx-auto">Devenez membre de l'Association 27 Degrés et participez à nos activités, événements et projets communautaires</p>
+    <a mat-raised-button color="primary" routerLink="/membership" class="px-8 text-lg">
+      <mat-icon>info</mat-icon>
+      <span class="ml-2">En savoir plus sur les cotisations</span>
+    </a>
+  </div>
+</section>
+

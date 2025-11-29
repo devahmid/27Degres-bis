@@ -1,0 +1,55 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-8 text-dark">Photothèque</h1>
+  
+  <!-- Images Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <mat-card *ngFor="let item of allImages$ | async" class="image-card hover:shadow-lg transition-shadow">
+      <div class="relative overflow-hidden">
+        <img 
+          [src]="item.image.imageUrl" 
+          [alt]="item.image.caption || 'Photo'" 
+          class="w-full h-64 object-cover cursor-pointer"
+          (click)="openImageModal(item.image.imageUrl, item.image.caption)">
+        <div class="absolute top-2 right-2">
+          <span *ngIf="item.type === 'gallery'" 
+                class="bg-green-500 px-2 py-1 rounded-full text-xs text-white font-semibold">
+            Public
+          </span>
+          <span *ngIf="item.type === 'event'"
+                class="bg-blue-500 px-2 py-1 rounded-full text-xs text-white font-semibold">
+            Événement
+          </span>
+        </div>
+      </div>
+      <mat-card-content class="p-4">
+        <p *ngIf="item.image.caption" class="font-semibold text-sm mb-1">{{ item.image.caption }}</p>
+        <p *ngIf="getEventTitle(item)" 
+           class="text-xs text-gray-500 mb-1">
+          <mat-icon class="align-middle text-xs">event</mat-icon>
+          {{ getEventTitle(item) }}
+        </p>
+        <p class="text-xs text-gray-400">{{ item.image.createdAt | dateFormat }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <p *ngIf="(allImages$ | async)?.length === 0" class="text-center text-gray-500 mt-8">
+    Aucune photo disponible.
+  </p>
+</div>
+
+<!-- Image Modal -->
+<div *ngIf="selectedImageUrl" 
+     class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+     (click)="closeImageModal()">
+  <div class="max-w-4xl max-h-full" (click)="$event.stopPropagation()">
+    <img [src]="selectedImageUrl" [alt]="selectedImageCaption || 'Photo'" class="max-w-full max-h-[90vh] object-contain">
+    <p *ngIf="selectedImageCaption" class="text-white text-center mt-4">{{ selectedImageCaption }}</p>
+    <button mat-icon-button 
+            class="absolute top-4 right-4 text-white"
+            (click)="closeImageModal()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</div>
+

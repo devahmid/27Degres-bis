@@ -1,0 +1,95 @@
+<div class="container mx-auto px-4 py-16">
+  <div class="text-center mb-12">
+    <h1 class="text-5xl font-bold mb-4 text-dark">Contactez-nous</h1>
+    <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+      Une question ? Une suggestion ? N'hésitez pas à nous écrire !
+    </p>
+  </div>
+  
+  <div class="max-w-3xl mx-auto">
+    <mat-card class="shadow-xl">
+      <mat-card-header>
+        <mat-card-title class="text-2xl">Envoyez-nous un message</mat-card-title>
+        <p class="text-white/90 mt-2">Nous vous répondrons dans les plus brefs délais</p>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="mt-4 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-dark font-medium mb-2">Nom complet *</label>
+              <input 
+                type="text" 
+                formControlName="name" 
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="Jean Dupont">
+              <div *ngIf="contactForm.get('name')?.hasError('required') && contactForm.get('name')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                Le nom est requis
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-dark font-medium mb-2">Email *</label>
+              <input 
+                type="email" 
+                formControlName="email" 
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="jean.dupont@email.com">
+              <div *ngIf="contactForm.get('email')?.hasError('required') && contactForm.get('email')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                L'email est requis
+              </div>
+              <div *ngIf="contactForm.get('email')?.hasError('email') && contactForm.get('email')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                Email invalide
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-dark font-medium mb-2">Sujet *</label>
+            <input 
+              type="text" 
+              formControlName="subject" 
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              placeholder="Objet de votre message">
+            <div *ngIf="contactForm.get('subject')?.hasError('required') && contactForm.get('subject')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              Le sujet est requis
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-dark font-medium mb-2">Message *</label>
+            <textarea 
+              formControlName="message" 
+              rows="6" 
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+              placeholder="Votre message..."></textarea>
+            <div *ngIf="contactForm.get('message')?.hasError('required') && contactForm.get('message')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              Le message est requis
+            </div>
+            <div *ngIf="contactForm.get('message')?.hasError('minlength') && contactForm.get('message')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              Le message doit contenir au moins 10 caractères
+            </div>
+          </div>
+
+          <button 
+            type="submit"
+            [disabled]="contactForm.invalid || isSubmitting"
+            class="w-full bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-secondary transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <mat-icon *ngIf="!isSubmitting" class="mr-2 align-middle">send</mat-icon>
+            <span>{{ isSubmitting ? 'Envoi en cours...' : 'Envoyer le message' }}</span>
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+

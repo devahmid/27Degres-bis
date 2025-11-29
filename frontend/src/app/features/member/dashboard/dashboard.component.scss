@@ -1,0 +1,63 @@
+// Styles pour le dashboard membre
+
+section {
+  // Welcome section gradient
+  &.bg-gradient-to-r {
+    background: linear-gradient(135deg, #E94E1B 0%, #F5B800 100%);
+  }
+}
+
+// Navigation active state
+a[routerLinkActive] {
+  &.text-primary {
+    border-bottom: 2px solid #E94E1B;
+  }
+}
+
+// Cards styling
+.bg-white {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+// Gradient backgrounds
+.bg-gradient-to-r {
+  &.from-green-500 {
+    background: linear-gradient(45deg, #7CB342, #8BC34A);
+  }
+  
+  &.from-secondary {
+    background: linear-gradient(45deg, #F5B800, #FFC107);
+  }
+  
+  &.from-red-500 {
+    background: linear-gradient(45deg, #E94E1B, #FF5722);
+  }
+  
+  &.from-gray-400 {
+    background: linear-gradient(45deg, #9CA3AF, #6B7280);
+  }
+}
+
+// Border left accent
+.border-l-4 {
+  padding-left: 1rem;
+  
+  &.border-primary {
+    border-left-color: #E94E1B;
+  }
+  
+  &.border-accent {
+    border-left-color: #7CB342;
+  }
+}
+
+// Badge styling
+.px-3.py-1.rounded-full {
+  display: inline-block;
+  font-weight: 500;
+}

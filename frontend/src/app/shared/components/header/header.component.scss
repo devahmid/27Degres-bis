@@ -1,0 +1,54 @@
+.header-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  // Ensure toolbar doesn't interfere with menu positioning
+  transform: translateZ(0);
+}
+
+.active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+// Fix menu positioning - ensure it appears above footer
+::ng-deep {
+  // Ensure icon button in header works correctly
+  button[mat-icon-button] {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    z-index: 1001 !important;
+    position: relative !important;
+  }
+  
+  // Menu overlay container - only set z-index, let Angular Material handle positioning
+  .cdk-overlay-container {
+    z-index: 10000 !important;
+  }
+  
+  // Menu panel - only set z-index
+  .mat-mdc-menu-panel {
+    z-index: 10000 !important;
+  }
+  
+  // Menu backdrop - only set z-index
+  .cdk-overlay-backdrop {
+    z-index: 9999 !important;
+  }
+  
+  // Ensure overlay pane can position correctly
+  .cdk-overlay-pane {
+    z-index: 10000 !important;
+    // Don't override positioning - let Angular Material calculate it
+  }
+  
+  // Fix for connected position bounding box - ensure it's positioned correctly
+  .cdk-overlay-connected-position-bounding-box {
+    // Ensure proper positioning context
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+

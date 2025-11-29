@@ -1,0 +1,145 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-light to-secondary/10 py-12 px-4">
+  <div class="max-w-2xl w-full">
+    <mat-card class="shadow-xl">
+      <mat-card-header>
+        <mat-card-title class="text-center text-3xl font-bold">Devenir membre</mat-card-title>
+        <p class="text-center text-white/90 mt-2">Rejoignez l'Association 27 Degrés</p>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="mt-4 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-dark font-medium mb-2">Prénom *</label>
+              <input 
+                type="text" 
+                formControlName="firstName" 
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="Jean">
+              <div *ngIf="registerForm.get('firstName')?.hasError('required') && registerForm.get('firstName')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                Le prénom est requis
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-dark font-medium mb-2">Nom *</label>
+              <input 
+                type="text" 
+                formControlName="lastName" 
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="Dupont">
+              <div *ngIf="registerForm.get('lastName')?.hasError('required') && registerForm.get('lastName')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                Le nom est requis
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-dark font-medium mb-2">Email *</label>
+            <input 
+              type="email" 
+              formControlName="email" 
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              placeholder="jean.dupont@email.com">
+            <div *ngIf="registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              L'email est requis
+            </div>
+            <div *ngIf="registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              Email invalide
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-dark font-medium mb-2">Téléphone</label>
+            <input 
+              type="tel" 
+              formControlName="phone"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              placeholder="+33 6 12 34 56 78">
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-dark font-medium mb-2">Mot de passe *</label>
+              <input 
+                type="password" 
+                formControlName="password" 
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="••••••••">
+              <div *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                Le mot de passe est requis
+              </div>
+              <div *ngIf="registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                Le mot de passe doit contenir au moins 8 caractères
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-dark font-medium mb-2">Confirmer le mot de passe *</label>
+              <input 
+                type="password" 
+                formControlName="confirmPassword" 
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="••••••••">
+              <div *ngIf="registerForm.get('confirmPassword')?.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                Les mots de passe ne correspondent pas
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-lg space-y-3">
+            <div class="flex items-start">
+              <input 
+                type="checkbox" 
+                formControlName="consentAnnuaire"
+                id="consentAnnuaire"
+                class="mt-1 mr-3 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+              <label for="consentAnnuaire" class="text-sm text-gray-700 cursor-pointer">
+                J'accepte d'apparaître dans l'annuaire des membres
+              </label>
+            </div>
+
+            <div class="flex items-start">
+              <input 
+                type="checkbox" 
+                formControlName="consentNewsletter"
+                id="consentNewsletter"
+                class="mt-1 mr-3 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+              <label for="consentNewsletter" class="text-sm text-gray-700 cursor-pointer">
+                J'accepte de recevoir la newsletter
+              </label>
+            </div>
+          </div>
+
+          <button 
+            type="submit"
+            [disabled]="registerForm.invalid || isSubmitting"
+            class="w-full bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-secondary transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <mat-icon *ngIf="!isSubmitting" class="mr-2 align-middle">person_add</mat-icon>
+            <span>{{ isSubmitting ? 'Inscription...' : 'Créer mon compte' }}</span>
+          </button>
+        </form>
+      </mat-card-content>
+      <mat-card-footer class="text-center">
+        <p class="text-gray-600">
+          Déjà membre ? 
+          <a routerLink="/auth/login" class="text-primary font-semibold hover:underline ml-1">
+            Se connecter
+          </a>
+        </p>
+      </mat-card-footer>
+    </mat-card>
+  </div>
+</div>
+
