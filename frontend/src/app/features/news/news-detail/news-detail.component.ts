@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -19,10 +20,10 @@ import { NotificationService } from '../../../core/services/notification.service
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     MatCardModule,
     MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
+    MatIconModule,
     ReactiveFormsModule,
     DateFormatPipe
   ],
@@ -59,22 +60,20 @@ export class NewsDetailComponent implements OnInit {
     this.comments$ = this.http.get<Comment[]>(`${environment.apiUrl}/posts/${slug}/comments`);
   }
 
-  onSubmitComment(postId: number): void {
+  onSubmitComment(slug: string): void {
     if (this.commentForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
-      this.http.post(`${environment.apiUrl}/posts/${postId}/comments`, this.commentForm.value)
+      // Utiliser le slug car l'API accepte les deux (ID ou slug)
+      this.http.post(`${environment.apiUrl}/posts/${slug}/comments`, this.commentForm.value)
         .subscribe({
           next: () => {
             this.notification.showSuccess('Commentaire ajouté !');
             this.commentForm.reset();
             this.isSubmitting = false;
-            const slug = this.route.snapshot.paramMap.get('slug');
-            if (slug) {
-              this.loadComments(slug);
-            }
+            this.loadComments(slug);
           },
           error: () => {
-            this.notification.showError('Erreur lors de l\'ajout du commentaire');
+            // L'erreur est déjà gérée par l'intercepteur d'erreur
             this.isSubmitting = false;
           }
         });

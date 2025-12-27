@@ -37,14 +37,14 @@ export class Document {
   @Column({ name: 'uploaded_by', nullable: true })
   uploadedBy?: number;
 
-  @ManyToOne(() => User, { nullable: true })
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'uploaded_by' })
   uploader?: User;
 
   @Column({ name: 'assigned_to_user_id', nullable: true })
   assignedToUserId?: number;
 
-  @ManyToOne(() => User, { nullable: true })
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'assigned_to_user_id' })
   assignedToUser?: User;
 

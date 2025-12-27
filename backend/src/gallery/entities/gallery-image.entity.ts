@@ -31,7 +31,7 @@ export class GalleryImage {
   @Column({ name: 'uploaded_by', nullable: true })
   uploadedBy?: number;
 
-  @ManyToOne(() => User, { nullable: true })
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'uploaded_by' })
   uploader?: User;
 

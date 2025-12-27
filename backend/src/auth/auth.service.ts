@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
@@ -13,10 +13,20 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    if (user && (await bcrypt.compare(password, user.password))) {
+    if (!user) {
+      console.log(`[Auth] User not found: ${email}`);
+      return null;
+    }
+    
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log(`[Auth] Password validation for ${email}: ${isPasswordValid}`);
+    
+    if (isPasswordValid) {
       const { password, ...result } = user;
       return result;
     }
+    
+    console.log(`[Auth] Invalid password for user: ${email}`);
     return null;
   }
 
@@ -35,12 +45,26 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    const user = await this.usersService.create({
-      ...registerDto,
-      password: hashedPassword,
-    });
-    return this.login(user);
+    // Vérifier si l'email existe déjà
+    const existingUser = await this.usersService.findByEmail(registerDto.email);
+    if (existingUser) {
+      throw new ConflictException('Un compte avec cet email existe déjà');
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+      const user = await this.usersService.create({
+        ...registerDto,
+        password: hashedPassword,
+      });
+      return this.login(user);
+    } catch (error: any) {
+      // Gérer les erreurs de contrainte unique au cas où la vérification échoue
+      if (error.code === '23505' || error.message?.includes('unique constraint')) {
+        throw new ConflictException('Un compte avec cet email existe déjà');
+      }
+      throw error;
+    }
   }
 
   async forgotPassword(email: string) {
@@ -48,4 +72,12 @@ export class AuthService {
     return { message: 'Email de réinitialisation envoyé' };
   }
 }
+
+
+
+
+
+
+
+
 

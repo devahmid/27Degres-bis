@@ -26,6 +26,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   isSubmitting = false;
   errorMessage = '';
+  hidePassword = true;
 
   constructor(
     private fb: FormBuilder,
@@ -73,8 +74,8 @@ export class LoginComponent {
             errorMsg = error.message;
           }
           
+          // Afficher l'erreur dans le template (l'intercepteur gère déjà la notification)
           this.errorMessage = errorMsg;
-          this.notification.showError(errorMsg);
           this.isSubmitting = false;
         }
       });

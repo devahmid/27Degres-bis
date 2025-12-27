@@ -30,12 +30,19 @@ import { TruncatePipe } from '../../shared/pipes/truncate.pipe';
 export class HomeComponent implements OnInit {
   recentPosts$!: Observable<Post[]>;
   upcomingEvent$!: Observable<Event | null>;
+  heroImageUrl = '/assets/images/hero-image.webp'; // Chemin de l'image hero
+  hasHeroImage = true; // Par défaut, on essaie d'afficher l'image
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.recentPosts$ = this.http.get<Post[]>(`${environment.apiUrl}/posts/recent`);
     this.upcomingEvent$ = this.http.get<Event | null>(`${environment.apiUrl}/events/upcoming`);
+  }
+
+  onImageError(): void {
+    // Si l'image ne peut pas être chargée, utiliser le fallback
+    this.hasHeroImage = false;
   }
 }
 

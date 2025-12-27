@@ -12,3 +12,11 @@ import { Cotisation } from './entities/cotisation.entity';
 })
 export class CotisationsModule {}
 
+
+
+
+
+
+
+
+

@@ -82,3 +82,11 @@ Pour changer le mot de passe :
 2. Déconnectez-vous et reconnectez-vous
 3. Vérifiez que le guard `roleGuard` fonctionne correctement
 
+
+
+
+
+
+
+
+

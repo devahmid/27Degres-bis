@@ -14,8 +14,9 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    // Hash password if provided
-    if (createUserDto.password) {
+    // Hash password if provided and not already hashed
+    // Bcrypt hashes start with $2a$, $2b$, or $2y$
+    if (createUserDto.password && !createUserDto.password.startsWith('$2')) {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
       createUserDto = { ...createUserDto, password: hashedPassword };
     }
@@ -57,7 +58,16 @@ export class UsersService {
   }
 
   async remove(id: number): Promise<void> {
-    await this.usersRepository.delete(id);
+    const user = await this.findOne(id);
+    
+    // Vérifier si l'utilisateur existe
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    
+    // Supprimer l'utilisateur
+    // Les relations avec onDelete: 'SET NULL' ou 'CASCADE' seront gérées automatiquement
+    await this.usersRepository.remove(user);
   }
 
   async getStatistics() {

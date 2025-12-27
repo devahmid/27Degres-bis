@@ -32,8 +32,20 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}/api`);
+  
+  try {
+    await app.listen(port);
+    console.log(`✅ Application is running on: http://localhost:${port}/api`);
+  } catch (error: any) {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`❌ Le port ${port} est déjà utilisé.`);
+      console.log(`💡 Essayez: npm run stop`);
+      console.log(`💡 Ou: lsof -ti:${port} | xargs kill -9`);
+      process.exit(1);
+    } else {
+      throw error;
+    }
+  }
 }
 bootstrap();
 

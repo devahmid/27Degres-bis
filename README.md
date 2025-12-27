@@ -61,3 +61,11 @@ L'API sera accessible sur http://localhost:3000/api
 Voir le fichier `cachierDesCharges.md` pour les détails complets du projet.
 
 # 27Degres-bis
+
+
+
+
+
+
+
+

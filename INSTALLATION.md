@@ -124,3 +124,11 @@ Les variables sont dans `frontend/src/environments/environment.ts` pour le déve
 - [ ] Configurer le stockage d'images (Cloudinary/S3)
 - [ ] Déployer sur Vercel (frontend) et Railway (backend)
 
+
+
+
+
+
+
+
+

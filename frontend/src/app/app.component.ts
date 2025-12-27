@@ -10,13 +10,19 @@ import { FooterComponent } from './shared/components/footer/footer.component';
   template: `
     <div class="flex flex-col min-h-screen" style="position: relative; z-index: 1;">
       <app-header></app-header>
-      <main class="flex-grow" style="position: relative; z-index: 1;">
+      <main class="flex-grow" style="position: relative; z-index: 1; padding-top: 80px;">
         <router-outlet></router-outlet>
       </main>
       <app-footer></app-footer>
     </div>
   `,
-  styles: []
+  styles: [`
+    @media (max-width: 768px) {
+      main {
+        padding-top: 70px !important;
+      }
+    }
+  `]
 })
 export class AppComponent {
   title = 'Association 27 Degrés';

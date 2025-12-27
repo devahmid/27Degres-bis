@@ -2,6 +2,20 @@ footer {
   margin-top: auto;
   position: relative;
   z-index: 1 !important; // Lower than menu overlay and dialogs
+
+  .footer-logo {
+    width: 120px;
+    height: auto;
+    max-width: 100%;
+    object-fit: contain;
+    filter: brightness(0) invert(1); // Rendre le logo blanc pour le footer sombre
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 
 // Ensure footer doesn't interfere with menu and dialogs

@@ -34,3 +34,11 @@ export class EventRegistration {
   registeredAt: Date;
 }
 
+
+
+
+
+
+
+
+

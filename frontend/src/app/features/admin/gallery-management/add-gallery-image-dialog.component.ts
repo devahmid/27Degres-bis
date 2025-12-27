@@ -98,7 +98,7 @@ export class AddGalleryImageDialogComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<AddGalleryImageDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { image?: GalleryImage },
+    @Inject(MAT_DIALOG_DATA) public data: { image?: GalleryImage } | null | undefined,
     private galleryService: GalleryService,
     private notification: NotificationService
   ) {

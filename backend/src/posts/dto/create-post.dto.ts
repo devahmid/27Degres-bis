@@ -37,3 +37,11 @@ export class CreatePostDto {
   authorId?: number;
 }
 
+
+
+
+
+
+
+
+

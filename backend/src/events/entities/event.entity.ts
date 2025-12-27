@@ -58,7 +58,7 @@ export class Event {
   @Column({ name: 'created_by', nullable: true })
   createdBy?: number;
 
-  @ManyToOne(() => User, { nullable: true })
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'created_by' })
   creator?: User;
 
@@ -74,4 +74,12 @@ export class Event {
   @OneToMany(() => EventImage, (image) => image.event)
   images: EventImage[];
 }
+
+
+
+
+
+
+
+
 

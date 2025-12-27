@@ -13,44 +13,88 @@
   </mat-card>
 
   <!-- Commentaires -->
-  <mat-card class="mt-8">
+  <mat-card class="mt-8 comments-card">
     <mat-card-header>
-      <mat-card-title>Commentaires</mat-card-title>
+      <mat-card-title>
+        <mat-icon class="mr-2 align-middle">comment</mat-icon>
+        Commentaires
+      </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div *ngIf="authService.isLoggedIn()" class="mb-6">
-        <form [formGroup]="commentForm" (ngSubmit)="onSubmitComment(post.id)">
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Ajouter un commentaire</mat-label>
-            <textarea matInput formControlName="content" rows="4" required></textarea>
-            <mat-error *ngIf="commentForm.get('content')?.hasError('required')">
+      <!-- Formulaire de commentaire -->
+      <div *ngIf="authService.isLoggedIn(); else loginPrompt" class="mb-8">
+        <form [formGroup]="commentForm" (ngSubmit)="onSubmitComment(post.slug)" class="space-y-4">
+          <div>
+            <label class="block text-dark font-medium mb-2">Ajouter un commentaire *</label>
+            <textarea 
+              formControlName="content" 
+              rows="5" 
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-y"
+              placeholder="Partagez vos pensées sur cet article..."></textarea>
+            <div *ngIf="commentForm.get('content')?.hasError('required') && commentForm.get('content')?.touched" 
+                 class="text-red-500 text-sm mt-1">
               Le commentaire est requis
-            </mat-error>
-            <mat-error *ngIf="commentForm.get('content')?.hasError('minlength')">
+            </div>
+            <div *ngIf="commentForm.get('content')?.hasError('minlength') && commentForm.get('content')?.touched" 
+                 class="text-red-500 text-sm mt-1">
               Le commentaire doit contenir au moins 10 caractères
-            </mat-error>
-          </mat-form-field>
-          <button 
-            mat-raised-button 
-            color="primary" 
-            type="submit"
-            [disabled]="commentForm.invalid || isSubmitting">
-            {{ isSubmitting ? 'Publication...' : 'Publier' }}
-          </button>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button 
+              type="submit"
+              [disabled]="commentForm.invalid || isSubmitting"
+              class="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-secondary transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              <mat-icon *ngIf="!isSubmitting" class="text-lg">send</mat-icon>
+              <span>{{ isSubmitting ? 'Publication...' : 'Publier' }}</span>
+            </button>
+          </div>
         </form>
       </div>
 
-      <div class="space-y-4">
-        <div *ngFor="let comment of comments$ | async" class="border-b pb-4">
-          <p class="font-semibold">{{ comment.user?.firstName }} {{ comment.user?.lastName }}</p>
-          <p class="text-gray-600">{{ comment.content }}</p>
-          <p class="text-sm text-gray-400">{{ comment.createdAt | dateFormat }}</p>
+      <ng-template #loginPrompt>
+        <div class="login-prompt mb-8">
+          <p class="mb-4">
+            <mat-icon>info</mat-icon>
+            Vous devez être connecté pour commenter.
+          </p>
+          <a routerLink="/auth/login">
+            <mat-icon>login</mat-icon>
+            <span>Se connecter</span>
+          </a>
         </div>
-        <p *ngIf="(comments$ | async)?.length === 0" class="text-gray-500">
-          Aucun commentaire pour le moment.
-        </p>
+      </ng-template>
+
+      <!-- Liste des commentaires -->
+      <div class="comments-list">
+        <div *ngFor="let comment of comments$ | async" class="comment-item">
+          <div class="comment-header">
+            <mat-icon>account_circle</mat-icon>
+            <span class="comment-author">
+              {{ comment.user?.firstName }} {{ comment.user?.lastName }}
+            </span>
+            <span class="comment-date">{{ comment.createdAt | dateFormat }}</span>
+          </div>
+          <div class="comment-content">
+            {{ comment.content }}
+          </div>
+        </div>
+        <div *ngIf="(comments$ | async)?.length === 0" class="empty-comments">
+          <mat-icon>comment</mat-icon>
+          <p>Aucun commentaire pour le moment.</p>
+          <p>Soyez le premier à commenter !</p>
+        </div>
       </div>
     </mat-card-content>
   </mat-card>
 </div>
+
+
+
+
+
+
+
+
 

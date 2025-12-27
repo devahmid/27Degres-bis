@@ -23,3 +23,11 @@ export interface EventRegistration {
   registeredAt: Date;
 }
 
+
+
+
+
+
+
+
+

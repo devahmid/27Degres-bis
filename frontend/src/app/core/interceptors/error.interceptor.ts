@@ -15,6 +15,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         notification.showError('Session expirée. Veuillez vous reconnecter.');
       } else if (error.status === 403) {
         notification.showError('Accès refusé.');
+      } else if (error.status === 409) {
+        // Conflict - email déjà utilisé, etc.
+        const message = error.error?.message || 'Cette ressource existe déjà.';
+        notification.showError(message);
       } else if (error.status >= 500) {
         notification.showError('Erreur serveur. Veuillez réessayer plus tard.');
       } else if (error.error?.message) {
@@ -27,4 +31,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
+
+
+
+
+
+
+
+
 

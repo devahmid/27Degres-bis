@@ -25,6 +25,8 @@ import { NotificationService } from '../../../core/services/notification.service
 export class RegisterComponent {
   registerForm: FormGroup;
   isSubmitting = false;
+  hidePassword = true;
+  hideConfirmPassword = true;
 
   constructor(
     private fb: FormBuilder,
@@ -64,8 +66,8 @@ export class RegisterComponent {
           this.notification.showSuccess('Inscription réussie !');
           this.router.navigate(['/member/dashboard']);
         },
-        error: (error) => {
-          this.notification.showError(error.error?.message || 'Erreur lors de l\'inscription');
+        error: () => {
+          // L'erreur est déjà gérée par l'intercepteur d'erreur
           this.isSubmitting = false;
         }
       });

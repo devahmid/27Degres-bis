@@ -73,12 +73,21 @@ import { NotificationService } from '../../../core/services/notification.service
 
         <div>
           <label class="block text-dark font-medium mb-2">Mot de passe *</label>
-          <input 
-            type="password" 
-            formControlName="password" 
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-            placeholder="••••••••">
+          <div class="relative">
+            <input 
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password" 
+              required
+              class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              placeholder="••••••••">
+            <button
+              type="button"
+              (click)="hidePassword = !hidePassword"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none p-1"
+              aria-label="Afficher/masquer le mot de passe">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
           <div *ngIf="memberForm.get('password')?.hasError('required') && memberForm.get('password')?.touched" 
                class="text-red-500 text-sm mt-1">
             Le mot de passe est requis
@@ -186,6 +195,7 @@ import { NotificationService } from '../../../core/services/notification.service
 export class AddMemberDialogComponent {
   memberForm: FormGroup;
   isSubmitting = false;
+  hidePassword = true;
 
   constructor(
     private fb: FormBuilder,

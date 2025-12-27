@@ -35,10 +35,10 @@ export class Post {
   @Column({ nullable: true, length: 100 })
   category?: string;
 
-  @Column({ name: 'author_id' })
-  authorId: number;
+  @Column({ name: 'author_id', nullable: true })
+  authorId?: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'author_id' })
   author: User;
 
@@ -67,4 +67,12 @@ export class Post {
   @OneToMany(() => PostTagRelation, (relation) => relation.post)
   tagRelations: PostTagRelation[];
 }
+
+
+
+
+
+
+
+
 

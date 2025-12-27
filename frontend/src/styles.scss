@@ -119,10 +119,17 @@ $theme: mat.define-light-theme((
   }
 
   // Menu overlays - CRITICAL: NO positioning styles - let Angular Material handle it completely
-  .cdk-overlay-pane:has(.mat-mdc-menu-panel),
-  .cdk-overlay-pane:not([class*="dialog"]):not([class*="mat-mdc-dialog"]) {
+  // Exception pour le menu utilisateur : forcer le positionnement à droite
+  .cdk-overlay-pane:has(.mat-mdc-menu-panel):not(:has(.user-menu-panel)),
+  .cdk-overlay-pane:not([class*="dialog"]):not([class*="mat-mdc-dialog"]):not(:has(.user-menu-panel)) {
     z-index: 99999 !important;
     // NO position, top, left, transform, max-width, max-height - Angular Material will calculate
+  }
+  
+  // Menu utilisateur : permettre le positionnement mais forcer à droite
+  .cdk-overlay-pane:has(.user-menu-panel) {
+    z-index: 99999 !important;
+    // Laisser Angular Material calculer mais s'assurer que xPosition="after" fonctionne
   }
   
   // Dialog overlays - centered (keep these styles)
@@ -136,11 +143,20 @@ $theme: mat.define-light-theme((
   }
   
   // Hide backdrop for menus - menus don't need backdrop
-  .cdk-overlay-container:has(.mat-mdc-menu-panel) .cdk-overlay-backdrop {
+  // Exception: Le menu utilisateur a besoin du backdrop pour se fermer au clic
+  .cdk-overlay-container:has(.mat-mdc-menu-panel):not(:has(.user-menu)) .cdk-overlay-backdrop {
     display: none !important;
     opacity: 0 !important;
     pointer-events: none !important;
     visibility: hidden !important;
+  }
+  
+  // Backdrop transparent pour le menu utilisateur (permet la fermeture au clic)
+  .cdk-overlay-container:has(.user-menu) .cdk-overlay-backdrop {
+    background-color: transparent !important;
+    pointer-events: auto !important;
+    opacity: 0 !important;
+    visibility: visible !important;
   }
   
   // Menu panels - no forced positioning - let Angular Material handle it completely

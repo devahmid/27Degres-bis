@@ -22,8 +22,6 @@ import { TruncatePipe } from '../../../shared/pipes/truncate.pipe';
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
     FormsModule,
     DateFormatPipe,
     TruncatePipe
