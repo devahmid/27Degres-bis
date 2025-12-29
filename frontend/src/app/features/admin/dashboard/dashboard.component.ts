@@ -18,6 +18,7 @@ import { DocumentsService, Document } from '../../../core/services/documents.ser
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
 import { User } from '../../../core/models/user.model';
+import { OrdersService } from '../../../core/services/orders.service';
 
 interface AdminStatistics {
   users: {
@@ -116,6 +117,61 @@ interface AdminStatistics {
         </mat-card>
       </div>
 
+      <!-- Shop Statistics -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" *ngIf="shopStats$ | async as shopStats">
+        <!-- Total Orders -->
+        <mat-card class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+          <mat-card-content class="p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-indigo-100 text-sm mb-1">Total Commandes</p>
+                <p class="text-3xl font-bold">{{ shopStats.totalOrders || 0 }}</p>
+              </div>
+              <mat-icon class="text-5xl opacity-50">shopping_cart</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Total Revenue -->
+        <mat-card class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
+          <mat-card-content class="p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-emerald-100 text-sm mb-1">Chiffre d'Affaires</p>
+                <p class="text-2xl font-bold">{{ shopStats.totalRevenue | number:'1.2-2' }} €</p>
+              </div>
+              <mat-icon class="text-5xl opacity-50">euro</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Pending Orders -->
+        <mat-card class="bg-gradient-to-br from-amber-500 to-amber-600 text-white">
+          <mat-card-content class="p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-amber-100 text-sm mb-1">Commandes en attente</p>
+                <p class="text-3xl font-bold">{{ shopStats.pendingOrders || 0 }}</p>
+              </div>
+              <mat-icon class="text-5xl opacity-50">schedule</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Products Sold -->
+        <mat-card class="bg-gradient-to-br from-rose-500 to-rose-600 text-white">
+          <mat-card-content class="p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-rose-100 text-sm mb-1">Produits vendus</p>
+                <p class="text-3xl font-bold">{{ shopStats.totalProductsSold || 0 }}</p>
+              </div>
+              <mat-icon class="text-5xl opacity-50">inventory</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
       <!-- Quick Actions -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <mat-card>
@@ -143,6 +199,14 @@ interface AdminStatistics {
               <button mat-stroked-button routerLink="/admin/comments" class="w-full">
                 <mat-icon class="mr-2">comment</mat-icon>
                 Gérer les Commentaires
+              </button>
+              <button mat-stroked-button routerLink="/admin/orders" class="w-full">
+                <mat-icon class="mr-2">shopping_cart</mat-icon>
+                Gérer les Commandes
+              </button>
+              <button mat-stroked-button routerLink="/admin/products" class="w-full">
+                <mat-icon class="mr-2">shopping_bag</mat-icon>
+                Gérer la Boutique
               </button>
             </div>
           </mat-card-content>
@@ -382,6 +446,7 @@ interface AdminStatistics {
 })
 export class AdminDashboardComponent implements OnInit {
   stats$!: Observable<AdminStatistics>;
+  shopStats$!: Observable<any>;;
   documents$!: Observable<Document[]>;
   users$!: Observable<User[]>;
   currentYear = new Date().getFullYear();
@@ -399,13 +464,19 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private documentsService: DocumentsService,
-    private notification: NotificationService
+    private notification: NotificationService,
+    private ordersService: OrdersService
   ) {}
 
   ngOnInit(): void {
     this.loadStatistics();
     this.loadDocuments();
     this.loadUsers();
+    this.loadShopStatistics();
+  }
+
+  loadShopStatistics(): void {
+    this.shopStats$ = this.ordersService.getStatistics();
   }
 
   loadUsers(): void {

@@ -8,7 +8,8 @@ import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../../core/services/auth.service';
-import { Subscription, filter } from 'rxjs';
+import { CartService } from '../../../core/services/orders.service';
+import { Subscription, filter, BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -30,23 +31,36 @@ export class HeaderComponent implements OnInit, OnDestroy, AfterViewInit {
   currentUser$;
   isScrolled = false;
   isMobileMenuOpen = false;
+  cartItemCount$ = new BehaviorSubject<number>(0);
   private routerSubscription?: Subscription;
   @ViewChild('menuTrigger') menuTrigger?: MatMenuTrigger;
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cartService: CartService
   ) {
     this.currentUser$ = this.authService.currentUser$;
+    this.updateCartCount();
+  }
+
+  updateCartCount(): void {
+    this.cartItemCount$.next(this.cartService.getCartItemCount());
   }
 
   ngOnInit() {
-    // Close mobile menu when route changes
+    // Close mobile menu when route changes and update cart count
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.closeMobileMenu();
+        this.updateCartCount();
       });
+    
+    // Écouter les changements du panier
+    this.cartService.cartUpdated.subscribe(() => {
+      this.updateCartCount();
+    });
     
     // S'assurer que le menu s'ouvre à droite
     if (this.menuTrigger) {

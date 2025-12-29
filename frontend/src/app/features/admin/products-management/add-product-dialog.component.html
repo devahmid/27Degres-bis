@@ -1,0 +1,150 @@
+<div class="p-6 max-w-2xl">
+  <h2 class="text-2xl font-bold mb-6 text-dark">{{ isEditMode ? 'Modifier le produit' : 'Ajouter un produit' }}</h2>
+
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <!-- Image -->
+    <div>
+      <label class="block text-dark font-medium mb-2">Image du produit</label>
+      <div class="flex items-center gap-4">
+        <div *ngIf="imagePreview" class="relative">
+          <img [src]="imagePreview" alt="Preview" class="w-32 h-32 object-cover rounded-lg border border-gray-300">
+          <button 
+            type="button"
+            (click)="removeImage()"
+            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+            <mat-icon class="text-sm">close</mat-icon>
+          </button>
+        </div>
+        <div>
+          <input 
+            type="file" 
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            class="hidden"
+            #fileInput>
+          <button 
+            type="button"
+            (click)="fileInput.click()"
+            class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+            <mat-icon class="text-sm">image</mat-icon>
+            <span>{{ imagePreview ? 'Changer l\'image' : 'Sélectionner une image' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nom -->
+    <div>
+      <label class="block text-dark font-medium mb-2">Nom du produit *</label>
+      <input 
+        type="text" 
+        formControlName="name" 
+        required
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+        placeholder="Ex: T-shirt 27 Degrés">
+      <div *ngIf="productForm.get('name')?.hasError('required') && productForm.get('name')?.touched" 
+           class="text-red-500 text-sm mt-1">
+        Le nom est requis
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <label class="block text-dark font-medium mb-2">Description</label>
+      <textarea 
+        formControlName="description" 
+        rows="4"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+        placeholder="Description du produit"></textarea>
+    </div>
+
+    <!-- Prix -->
+    <div>
+      <label class="block text-dark font-medium mb-2">Prix (€) *</label>
+      <input 
+        type="number" 
+        formControlName="price" 
+        required 
+        min="0" 
+        step="0.01"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+        placeholder="0.00">
+      <div *ngIf="productForm.get('price')?.hasError('required') && productForm.get('price')?.touched" 
+           class="text-red-500 text-sm mt-1">
+        Le prix est requis
+      </div>
+      <div *ngIf="productForm.get('price')?.hasError('min') && productForm.get('price')?.touched" 
+           class="text-red-500 text-sm mt-1">
+        Le prix doit être positif
+      </div>
+    </div>
+
+    <!-- Catégorie -->
+    <div>
+      <label class="block text-dark font-medium mb-2">Catégorie</label>
+      <input 
+        type="text" 
+        formControlName="category"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+        placeholder="Ex: tshirt, accessoire">
+    </div>
+
+    <!-- Stock -->
+    <div>
+      <label class="block text-dark font-medium mb-2">Quantité en stock *</label>
+      <input 
+        type="number" 
+        formControlName="stockQuantity" 
+        required 
+        min="0"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+        placeholder="0">
+      <div *ngIf="productForm.get('stockQuantity')?.hasError('required') && productForm.get('stockQuantity')?.touched" 
+           class="text-red-500 text-sm mt-1">
+        La quantité est requise
+      </div>
+    </div>
+
+    <!-- Statut -->
+    <div>
+      <label class="block text-dark font-medium mb-2">Statut *</label>
+      <select 
+        formControlName="status" 
+        required
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white">
+        <option value="active">Actif</option>
+        <option value="inactive">Inactif</option>
+        <option value="sold_out">Rupture de stock</option>
+      </select>
+    </div>
+
+    <!-- Mis en avant -->
+    <div class="flex items-center">
+      <input 
+        type="checkbox" 
+        formControlName="isFeatured"
+        id="isFeatured"
+        class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+      <label for="isFeatured" class="ml-2 text-gray-700">
+        Mettre en avant sur la page boutique
+      </label>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end space-x-4 pt-4">
+      <button 
+        type="button"
+        (click)="onCancel()"
+        class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+        Annuler
+      </button>
+      <button 
+        type="submit"
+        [disabled]="!productForm.valid"
+        class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ isEditMode ? 'Modifier' : 'Créer' }}
+      </button>
+    </div>
+  </form>
+</div>
+

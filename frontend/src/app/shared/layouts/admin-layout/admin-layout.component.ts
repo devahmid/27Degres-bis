@@ -69,6 +69,18 @@ import { Router } from '@angular/router';
               class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
               <mat-icon class="mr-2 align-middle text-sm">photo_library</mat-icon>Photothèque
             </a>
+            <a routerLink="/admin/products" routerLinkActive="text-primary border-b-2 border-primary" 
+             class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
+            <mat-icon class="mr-2 align-middle text-sm">shopping_bag</mat-icon>Boutique
+          </a>
+            <a routerLink="/admin/orders" routerLinkActive="text-primary border-b-2 border-primary" 
+             class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
+            <mat-icon class="mr-2 align-middle text-sm">shopping_cart</mat-icon>Commandes
+          </a>
+            <a routerLink="/admin/delivery-methods" routerLinkActive="text-primary border-b-2 border-primary" 
+             class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
+            <mat-icon class="mr-2 align-middle text-sm">local_shipping</mat-icon>Livraison
+          </a>
             <a routerLink="/admin/statistics" routerLinkActive="text-primary border-b-2 border-primary"
              class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
             <mat-icon class="mr-2 align-middle text-sm">bar_chart</mat-icon>Statistiques
@@ -118,6 +130,21 @@ import { Router } from '@angular/router';
                 class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
                 <mat-icon class="mr-2 align-middle text-sm">photo_library</mat-icon>Photothèque
               </a>
+              <a routerLink="/admin/products" routerLinkActive="text-primary font-semibold"
+               (click)="mobileMenuOpen = false"
+               class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
+              <mat-icon class="mr-2 align-middle text-sm">shopping_bag</mat-icon>Boutique
+            </a>
+              <a routerLink="/admin/orders" routerLinkActive="text-primary font-semibold"
+               (click)="mobileMenuOpen = false"
+               class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
+              <mat-icon class="mr-2 align-middle text-sm">shopping_cart</mat-icon>Commandes
+            </a>
+              <a routerLink="/admin/delivery-methods" routerLinkActive="text-primary font-semibold"
+               (click)="mobileMenuOpen = false"
+               class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
+              <mat-icon class="mr-2 align-middle text-sm">local_shipping</mat-icon>Livraison
+            </a>
               <a routerLink="/admin/statistics" routerLinkActive="text-primary font-semibold"
                (click)="mobileMenuOpen = false"
                class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">

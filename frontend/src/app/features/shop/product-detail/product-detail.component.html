@@ -1,0 +1,92 @@
+<div class="container mx-auto px-4 py-8" *ngIf="!loading">
+  <div *ngIf="product" class="max-w-6xl mx-auto">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+      <a routerLink="/shop" class="text-primary hover:underline">← Retour à la boutique</a>
+    </nav>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Image -->
+      <div class="product-image-container">
+        <img 
+          *ngIf="product.imageUrl" 
+          [src]="product.imageUrl" 
+          [alt]="product.name"
+          class="w-full rounded-lg shadow-lg">
+        <div *ngIf="!product.imageUrl" class="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
+          <mat-icon class="text-6xl text-gray-400">image</mat-icon>
+        </div>
+      </div>
+
+      <!-- Product Info -->
+      <div class="product-info">
+        <h1 class="text-4xl font-bold mb-4 text-dark">{{ product.name }}</h1>
+        
+        <div class="mb-6">
+          <p class="text-4xl font-bold text-primary mb-4">{{ formatPrice(product.price) }}</p>
+          <div class="flex items-center gap-2 mb-4">
+            <span [class]="product.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'" class="font-medium">
+              {{ product.stockQuantity > 0 ? 'En stock' : 'Rupture de stock' }}
+            </span>
+            <span *ngIf="product.stockQuantity > 0" class="text-gray-600">
+              ({{ product.stockQuantity }} disponible{{ product.stockQuantity > 1 ? 's' : '' }})
+            </span>
+          </div>
+          <mat-chip *ngIf="product.category" class="mb-4">{{ product.category }}</mat-chip>
+        </div>
+
+        <div *ngIf="product.description" class="mb-6">
+          <h2 class="text-xl font-semibold mb-2 text-dark">Description</h2>
+          <p class="text-gray-700 whitespace-pre-line">{{ product.description }}</p>
+        </div>
+
+        <!-- Quantity Selector -->
+        <div class="mb-6" *ngIf="product.stockQuantity > 0">
+          <label class="block text-sm font-medium mb-2 text-dark">Quantité</label>
+          <div class="flex items-center gap-4">
+            <button 
+              mat-icon-button 
+              (click)="decreaseQuantity()"
+              [disabled]="quantity <= 1"
+              class="border border-gray-300 rounded">
+              <mat-icon>remove</mat-icon>
+            </button>
+            <span class="text-xl font-semibold w-12 text-center">{{ quantity }}</span>
+            <button 
+              mat-icon-button 
+              (click)="increaseQuantity()"
+              [disabled]="quantity >= product.stockQuantity"
+              class="border border-gray-300 rounded">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Add to Cart Button -->
+        <div class="flex gap-4">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="addToCart()"
+            [disabled]="product.stockQuantity === 0"
+            class="flex-1 py-3 text-lg">
+            <mat-icon>shopping_cart</mat-icon>
+            <span class="ml-2">Ajouter au panier</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!product && !loading" class="text-center py-12">
+    <mat-icon class="text-6xl text-gray-400 mb-4">error_outline</mat-icon>
+    <p class="text-xl text-gray-600">Produit non trouvé</p>
+    <a routerLink="/shop" mat-button color="primary" class="mt-4">Retour à la boutique</a>
+  </div>
+</div>
+
+<div *ngIf="loading" class="container mx-auto px-4 py-8 text-center">
+  <mat-icon class="animate-spin text-4xl text-primary">refresh</mat-icon>
+  <p class="mt-4 text-gray-600">Chargement...</p>
+</div>
+

@@ -57,6 +57,28 @@ export const routes: Routes = [
     loadComponent: () => import('./features/gallery/public-gallery.component').then(m => m.PublicGalleryComponent)
   },
   {
+    path: 'shop',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/shop/shop.component').then(m => m.ShopComponent)
+      },
+      {
+        path: 'cart',
+        loadComponent: () => import('./features/shop/cart/cart.component').then(m => m.CartComponent)
+      },
+      {
+        path: 'checkout',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/shop/checkout/checkout.component').then(m => m.CheckoutComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./features/shop/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
+      }
+    ]
+  },
+  {
     path: 'member',
     canActivate: [authGuard],
     loadComponent: () => import('./shared/layouts/member-layout/member-layout.component').then(m => m.MemberLayoutComponent),
@@ -84,6 +106,10 @@ export const routes: Routes = [
       {
         path: 'gallery',
         loadComponent: () => import('./features/member/gallery/gallery.component').then(m => m.GalleryComponent)
+      },
+      {
+        path: 'orders',
+        loadComponent: () => import('./features/member/my-orders/my-orders.component').then(m => m.MyOrdersComponent)
       },
       {
         path: '',
@@ -129,6 +155,18 @@ export const routes: Routes = [
       {
         path: 'statistics',
         loadComponent: () => import('./features/admin/statistics/statistics.component').then(m => m.StatisticsComponent)
+      },
+      {
+        path: 'products',
+        loadComponent: () => import('./features/admin/products-management/products-management.component').then(m => m.ProductsManagementComponent)
+      },
+      {
+        path: 'orders',
+        loadComponent: () => import('./features/admin/orders-management/orders-management.component').then(m => m.OrdersManagementComponent)
+      },
+      {
+        path: 'delivery-methods',
+        loadComponent: () => import('./features/admin/delivery-methods-management/delivery-methods-management.component').then(m => m.DeliveryMethodsManagementComponent)
       },
       {
         path: '',

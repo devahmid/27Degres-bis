@@ -1,0 +1,131 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-dark">Gestion des commandes</h1>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow p-4 mb-6">
+    <div class="flex items-center gap-4">
+      <label class="text-dark font-medium">Filtrer par statut :</label>
+      <select 
+        [(ngModel)]="statusFilter"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+        <option value="all">Toutes</option>
+        <option value="pending">En attente</option>
+        <option value="confirmed">Confirmée</option>
+        <option value="processing">En traitement</option>
+        <option value="shipped">Expédiée</option>
+        <option value="delivered">Livrée</option>
+        <option value="cancelled">Annulée</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="bg-white rounded-lg shadow overflow-hidden" *ngIf="!loading">
+    <table mat-table [dataSource]="getFilteredOrders()" class="w-full">
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>ID</th>
+        <td mat-cell *matCellDef="let order">#{{ order.id }}</td>
+      </ng-container>
+
+      <!-- User Column -->
+      <ng-container matColumnDef="user">
+        <th mat-header-cell *matHeaderCellDef>Client</th>
+        <td mat-cell *matCellDef="let order">
+          <div *ngIf="order.user">
+            {{ order.user.firstName }} {{ order.user.lastName }}
+            <div class="text-sm text-gray-600">{{ order.user.email }}</div>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Statut</th>
+        <td mat-cell *matCellDef="let order">
+          <select 
+            [value]="order.status"
+            (change)="updateOrderStatus(order, $any($event.target).value)"
+            class="px-3 py-1 rounded text-sm font-medium border border-gray-300 focus:ring-2 focus:ring-primary">
+            <option value="pending">En attente</option>
+            <option value="confirmed">Confirmée</option>
+            <option value="processing">En traitement</option>
+            <option value="shipped">Expédiée</option>
+            <option value="delivered">Livrée</option>
+            <option value="cancelled">Annulée</option>
+          </select>
+        </td>
+      </ng-container>
+
+      <!-- Total Column -->
+      <ng-container matColumnDef="totalAmount">
+        <th mat-header-cell *matHeaderCellDef>Total</th>
+        <td mat-cell *matCellDef="let order" class="font-semibold">
+          {{ formatPrice(order.totalAmount) }}
+        </td>
+      </ng-container>
+
+      <!-- Payment Status Column -->
+      <ng-container matColumnDef="paymentStatus">
+        <th mat-header-cell *matHeaderCellDef>Paiement</th>
+        <td mat-cell *matCellDef="let order">
+          <select 
+            [value]="order.paymentStatus"
+            (change)="updatePaymentStatus(order, $any($event.target).value)"
+            class="px-3 py-1 rounded text-sm font-medium border border-gray-300 focus:ring-2 focus:ring-primary">
+            <option value="pending">En attente</option>
+            <option value="paid">Payé</option>
+            <option value="failed">Échoué</option>
+            <option value="refunded">Remboursé</option>
+          </select>
+        </td>
+      </ng-container>
+
+      <!-- Date Column -->
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let order" class="text-sm text-gray-600">
+          {{ formatDate(order.createdAt) }}
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let order">
+          <button 
+            mat-icon-button 
+            color="primary"
+            (click)="viewOrder(order)"
+            matTooltip="Voir les détails">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button 
+            *ngIf="canDelete(order)"
+            mat-icon-button 
+            color="warn"
+            (click)="deleteOrder(order)"
+            matTooltip="Supprimer la commande">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <div *ngIf="getFilteredOrders().length === 0" class="text-center py-12 text-gray-500">
+      <mat-icon class="text-6xl mb-4">shopping_cart</mat-icon>
+      <p>Aucune commande trouvée</p>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-12">
+    <mat-icon class="animate-spin text-4xl text-primary">refresh</mat-icon>
+    <p class="mt-4 text-gray-600">Chargement...</p>
+  </div>
+</div>
+
