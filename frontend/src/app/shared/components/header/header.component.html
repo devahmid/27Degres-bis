@@ -33,6 +33,17 @@
         <mat-icon>photo_library</mat-icon>
         <span>Photothèque</span>
       </a>
+      <a routerLink="/shop" routerLinkActive="active" class="nav-link">
+        <mat-icon>shopping_bag</mat-icon>
+        <span>Boutique</span>
+      </a>
+      <a routerLink="/shop/cart" routerLinkActive="active" class="nav-link relative">
+        <mat-icon>shopping_cart</mat-icon>
+        <span>Panier</span>
+        <span *ngIf="cartItemCount$ | async as count" class="absolute -top-1 -right-1 bg-accent text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+          {{ count }}
+        </span>
+      </a>
       <a routerLink="/contact" routerLinkActive="active" class="nav-link">
         <mat-icon>mail</mat-icon>
         <span>Contact</span>
@@ -137,6 +148,17 @@
       <a routerLink="/gallery" routerLinkActive="active" class="mobile-nav-link" (click)="closeMobileMenu()">
         <mat-icon>photo_library</mat-icon>
         <span>Photothèque</span>
+      </a>
+      <a routerLink="/shop" routerLinkActive="active" class="mobile-nav-link" (click)="closeMobileMenu()">
+        <mat-icon>shopping_bag</mat-icon>
+        <span>Boutique</span>
+      </a>
+      <a routerLink="/shop/cart" routerLinkActive="active" class="mobile-nav-link relative" (click)="closeMobileMenu()">
+        <mat-icon>shopping_cart</mat-icon>
+        <span>Panier</span>
+        <span *ngIf="cartItemCount$ | async as count" class="absolute top-0 right-0 bg-accent text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+          {{ count }}
+        </span>
       </a>
       <a routerLink="/contact" routerLinkActive="active" class="mobile-nav-link" (click)="closeMobileMenu()">
         <mat-icon>mail</mat-icon>

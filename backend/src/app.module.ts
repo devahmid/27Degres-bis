@@ -13,6 +13,8 @@ import { ContactModule } from './contact/contact.module';
 import { DatabaseModule } from './database/database.module';
 import { StorageModule } from './storage/storage.module';
 import { GalleryModule } from './gallery/gallery.module';
+import { ProductsModule } from './products/products.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { GalleryModule } from './gallery/gallery.module';
     ContactModule,
     StorageModule,
     GalleryModule,
+    ProductsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

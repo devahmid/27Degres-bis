@@ -1,0 +1,123 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="text-center mb-12">
+    <h1 class="text-4xl font-bold mb-4 text-dark">Boutique</h1>
+    <p class="text-xl text-gray-600">Découvrez nos produits à l'effigie de l'Association 27 Degrés</p>
+  </div>
+
+  <!-- Produits mis en avant -->
+  <section *ngIf="featuredProducts$ | async as featured" class="mb-16">
+    <h2 class="text-2xl font-bold mb-6 text-dark">Produits mis en avant</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <mat-card *ngFor="let product of featured" class="product-card hover:shadow-xl transition-all duration-300">
+        <img *ngIf="product.imageUrl" mat-card-image [src]="product.imageUrl" [alt]="product.name" class="product-image">
+        <div *ngIf="!product.imageUrl" class="product-placeholder">
+          <mat-icon>image</mat-icon>
+        </div>
+        <mat-card-header>
+          <mat-card-title class="line-clamp-2">{{ product.name }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="text-2xl font-bold text-primary mb-2">{{ formatPrice(product.price) }}</p>
+          <p *ngIf="product.description" class="text-gray-600 line-clamp-2 text-sm">{{ product.description }}</p>
+          <mat-chip *ngIf="product.category" class="mt-2">{{ product.category }}</mat-chip>
+          <div class="mt-2 flex items-center gap-2">
+            <span [class]="product.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium">
+              {{ product.stockQuantity > 0 ? 'En stock' : 'Rupture de stock' }}
+            </span>
+          </div>
+        </mat-card-content>
+        <mat-card-actions class="flex gap-2">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            [routerLink]="['/shop', product.id]"
+            class="flex-1">
+            <mat-icon>visibility</mat-icon>
+            <span class="ml-2">Voir détails</span>
+          </button>
+          <button 
+            mat-raised-button 
+            color="accent" 
+            [disabled]="product.stockQuantity === 0"
+            (click)="addToCart(product)"
+            class="flex-1">
+            <mat-icon>shopping_cart</mat-icon>
+            <span class="ml-2">{{ product.stockQuantity > 0 ? 'Ajouter' : 'Indisponible' }}</span>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- Filtres par catégorie -->
+  <section *ngIf="categories.length > 0" class="mb-8">
+    <div class="flex flex-wrap gap-2 items-center">
+      <button
+        (click)="filterByCategory(null)"
+        [class.bg-primary]="selectedCategory === null"
+        [class.text-white]="selectedCategory === null"
+        class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors">
+        Tous
+      </button>
+      <button
+        *ngFor="let category of categories"
+        (click)="filterByCategory(category)"
+        [class.bg-primary]="selectedCategory === category"
+        [class.text-white]="selectedCategory === category"
+        class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors">
+        {{ category }}
+      </button>
+    </div>
+  </section>
+
+  <!-- Tous les produits -->
+  <section>
+    <h2 class="text-2xl font-bold mb-6 text-dark">Tous les produits</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" *ngIf="products$ | async as products">
+      <mat-card *ngFor="let product of getFilteredProducts(products)" class="product-card hover:shadow-xl transition-all duration-300">
+        <img *ngIf="product.imageUrl" mat-card-image [src]="product.imageUrl" [alt]="product.name" class="product-image">
+        <div *ngIf="!product.imageUrl" class="product-placeholder">
+          <mat-icon>image</mat-icon>
+        </div>
+        <mat-card-header>
+          <mat-card-title class="line-clamp-2">{{ product.name }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="text-2xl font-bold text-primary mb-2">{{ formatPrice(product.price) }}</p>
+          <p *ngIf="product.description" class="text-gray-600 line-clamp-2 text-sm">{{ product.description }}</p>
+          <mat-chip *ngIf="product.category" class="mt-2">{{ product.category }}</mat-chip>
+          <div class="mt-2 flex items-center gap-2">
+            <span [class]="product.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium">
+              {{ product.stockQuantity > 0 ? 'En stock' : 'Rupture de stock' }}
+            </span>
+          </div>
+        </mat-card-content>
+        <mat-card-actions class="flex gap-2">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            [routerLink]="['/shop', product.id]"
+            class="flex-1">
+            <mat-icon>visibility</mat-icon>
+            <span class="ml-2">Voir détails</span>
+          </button>
+          <button 
+            mat-raised-button 
+            color="accent" 
+            [disabled]="product.stockQuantity === 0"
+            (click)="addToCart(product)"
+            class="flex-1">
+            <mat-icon>shopping_cart</mat-icon>
+            <span class="ml-2">{{ product.stockQuantity > 0 ? 'Ajouter' : 'Indisponible' }}</span>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+      
+      <p *ngIf="getFilteredProducts(products).length === 0" class="col-span-full text-center text-gray-500 py-8">
+        Aucun produit trouvé dans cette catégorie.
+      </p>
+    </div>
+  </section>
+</div>
+

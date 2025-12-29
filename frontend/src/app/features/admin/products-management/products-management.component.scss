@@ -1,0 +1,37 @@
+.product-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.product-thumbnail-placeholder {
+  width: 60px;
+  height: 60px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+table {
+  width: 100%;
+  
+  th {
+    font-weight: 600;
+    color: #1A3B5C;
+  }
+  
+  td {
+    padding: 1rem 0.5rem;
+  }
+}
+

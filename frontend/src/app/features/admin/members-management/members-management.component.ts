@@ -7,7 +7,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { AddMemberDialogComponent } from './add-member-dialog.component';
+import { EditMemberDialogComponent } from './edit-member-dialog.component';
+import { SendMessageDialogComponent } from './send-message-dialog.component';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
@@ -28,6 +31,7 @@ import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
     MatTableModule,
     MatDialogModule,
     MatMenuModule,
+    MatDividerModule,
     FormsModule,
     DateFormatPipe
   ],
@@ -158,17 +162,50 @@ import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
                 <mat-icon>edit</mat-icon>
                 <span>Modifier</span>
               </button>
+              <button mat-menu-item (click)="sendMessage(member)">
+                <mat-icon>email</mat-icon>
+                <span>Envoyer un message</span>
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item [matMenuTriggerFor]="roleMenu" [matMenuTriggerData]="{member: member}">
+                <mat-icon>admin_panel_settings</mat-icon>
+                <span>Changer le rôle</span>
+                <mat-icon class="ml-auto">arrow_right</mat-icon>
+              </button>
+              <button mat-menu-item (click)="toggleMemberStatus(member)">
+                <mat-icon>{{ member.isActive ? 'block' : 'check_circle' }}</mat-icon>
+                <span>{{ member.isActive ? 'Bloquer' : 'Débloquer' }}</span>
+              </button>
+              <mat-divider></mat-divider>
               <button mat-menu-item (click)="viewMemberCotisations(member)">
                 <mat-icon>credit_card</mat-icon>
                 <span>Voir cotisations</span>
               </button>
-              <button mat-menu-item (click)="toggleMemberStatus(member)">
-                <mat-icon>{{ member.isActive ? 'block' : 'check_circle' }}</mat-icon>
-                <span>{{ member.isActive ? 'Désactiver' : 'Activer' }}</span>
-              </button>
               <button mat-menu-item (click)="deleteMember(member)" class="text-red-600">
                 <mat-icon>delete</mat-icon>
                 <span>Supprimer</span>
+              </button>
+            </ng-template>
+          </mat-menu>
+
+          <!-- Sous-menu pour les rôles -->
+          <mat-menu #roleMenu="matMenu">
+            <ng-template matMenuContent let-member="member">
+              <button mat-menu-item (click)="changeRole(member, 'admin')">
+                <mat-icon>admin_panel_settings</mat-icon>
+                <span>Admin</span>
+              </button>
+              <button mat-menu-item (click)="changeRole(member, 'bureau')">
+                <mat-icon>group</mat-icon>
+                <span>Bureau</span>
+              </button>
+              <button mat-menu-item (click)="changeRole(member, 'membre')">
+                <mat-icon>person</mat-icon>
+                <span>Membre</span>
+              </button>
+              <button mat-menu-item (click)="changeRole(member, 'visiteur')">
+                <mat-icon>visibility</mat-icon>
+                <span>Visiteur</span>
               </button>
             </ng-template>
           </mat-menu>
@@ -231,13 +268,52 @@ export class MembersManagementComponent implements OnInit {
   }
 
   editMember(member: User): void {
-    // TODO: Open edit dialog
-    this.notification.showInfo('Fonctionnalité à venir');
+    const dialogRef = this.dialog.open(EditMemberDialogComponent, {
+      width: '90%',
+      maxWidth: '800px',
+      disableClose: true,
+      data: { member }
+    });
+
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        this.ngOnInit();
+      }
+    });
   }
 
   viewMemberCotisations(member: User): void {
     // TODO: Navigate to cotisations with filter
     this.notification.showInfo('Fonctionnalité à venir');
+  }
+
+  changeRole(member: User, newRole: string): void {
+    if (confirm(`Changer le rôle de ${member.firstName} ${member.lastName} en "${newRole}" ?`)) {
+      this.http.patch<User>(`${environment.apiUrl}/users/admin/${member.id}`, {
+        role: newRole
+      }).subscribe({
+        next: () => {
+          this.notification.showSuccess(`Rôle changé en "${newRole}" avec succès`);
+          this.ngOnInit();
+        },
+        error: () => {
+          this.notification.showError('Erreur lors du changement de rôle');
+        }
+      });
+    }
+  }
+
+  sendMessage(member: User): void {
+    const dialogRef = this.dialog.open(SendMessageDialogComponent, {
+      width: '90%',
+      maxWidth: '600px',
+      disableClose: true,
+      data: { member }
+    });
+
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      // Le message est envoyé depuis le dialog
+    });
   }
 
   toggleMemberStatus(member: User): void {

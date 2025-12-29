@@ -1,0 +1,31 @@
+.product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  .product-image {
+    height: 250px;
+    object-fit: cover;
+    width: 100%;
+  }
+  
+  .product-placeholder {
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    color: #9ca3af;
+    
+    mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+    }
+  }
+  
+  mat-card-content {
+    flex-grow: 1;
+  }
+}
+

@@ -13,6 +13,10 @@ import { PostTagRelation } from '../posts/entities/post-tag-relation.entity';
 import { Document } from '../documents/entities/document.entity';
 import { ContactMessage } from '../contact/entities/contact-message.entity';
 import { GalleryImage } from '../gallery/entities/gallery-image.entity';
+import { Product } from '../products/entities/product.entity';
+import { Order } from '../orders/entities/order.entity';
+import { OrderItem } from '../orders/entities/order-item.entity';
+import { DeliveryMethod } from '../orders/entities/delivery-method.entity';
 
 @Module({
   imports: [
@@ -38,6 +42,10 @@ import { GalleryImage } from '../gallery/entities/gallery-image.entity';
               Document,
               ContactMessage,
               GalleryImage,
+              Product,
+              Order,
+              OrderItem,
+              DeliveryMethod,
             ],
             synchronize: configService.get('NODE_ENV') !== 'production',
             logging: configService.get('NODE_ENV') === 'development',
@@ -64,8 +72,12 @@ import { GalleryImage } from '../gallery/entities/gallery-image.entity';
             PostTag,
             PostTagRelation,
             Document,
-            ContactMessage,
-            GalleryImage,
+              ContactMessage,
+              GalleryImage,
+              Product,
+              Order,
+              OrderItem,
+              DeliveryMethod,
           ],
           synchronize: configService.get('NODE_ENV') !== 'production',
           logging: configService.get('NODE_ENV') === 'development',

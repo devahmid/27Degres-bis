@@ -1,0 +1,15 @@
+// Styles pour le dialog de produit
+::ng-deep .mat-mdc-dialog-container {
+  padding: 0 !important;
+}
+
+// Assurer que les inputs sont bien stylisés
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  &:focus {
+    outline: none;
+  }
+}
+
