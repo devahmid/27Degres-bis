@@ -45,6 +45,12 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { email } });
   }
 
+  async findByPasswordResetToken(token: string): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: { passwordResetToken: token },
+    });
+  }
+
   async findDirectory(): Promise<User[]> {
     return this.usersRepository.find({
       where: { consentAnnuaire: true, isActive: true },

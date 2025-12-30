@@ -1,11 +1,13 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../../core/services/notification.service';
 import { User } from '../../../core/models/user.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-send-message-dialog',
@@ -80,7 +82,8 @@ export class SendMessageDialogComponent {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<SendMessageDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { member: User },
-    private notification: NotificationService
+    private notification: NotificationService,
+    private http: HttpClient
   ) {
     this.messageForm = this.fb.group({
       subject: ['', Validators.required],
@@ -90,19 +93,21 @@ export class SendMessageDialogComponent {
 
   onSubmit(): void {
     if (this.messageForm.valid) {
-      // Pour l'instant, on simule l'envoi d'un email
-      // Dans une vraie application, vous appelleriez un service d'email
-      const emailData = {
+      // Appeler l'API backend pour envoyer l'email
+      this.http.post(`${environment.apiUrl}/mail/send-member-message`, {
         to: this.data.member.email,
         subject: this.messageForm.value.subject,
         message: this.messageForm.value.message
-      };
-
-      // TODO: Implémenter l'appel API pour envoyer l'email
-      console.log('Email à envoyer:', emailData);
-      
-      this.notification.showSuccess(`Message envoyé à ${this.data.member.firstName} ${this.data.member.lastName}`);
-      this.dialogRef.close(true);
+      }).subscribe({
+        next: () => {
+          this.notification.showSuccess(`Message envoyé à ${this.data.member.firstName} ${this.data.member.lastName}`);
+          this.dialogRef.close(true);
+        },
+        error: (error: any) => {
+          this.notification.showError(error.error?.message || 'Erreur lors de l\'envoi du message');
+          console.error(error);
+        }
+      });
     }
   }
 

@@ -8,14 +8,11 @@ import { DeliveryMethod } from './entities/delivery-method.entity';
 import { DeliveryMethodsService } from './delivery-methods.service';
 import { DeliveryMethodsController } from './delivery-methods.controller';
 import { ProductsModule } from '../products/products.module';
-import { Product } from '../products/entities/product.entity';
-import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, DeliveryMethod, Product]),
+    TypeOrmModule.forFeature([Order, OrderItem, DeliveryMethod]),
     ProductsModule,
-    MailModule,
   ],
   controllers: [OrdersController, DeliveryMethodsController],
   providers: [OrdersService, DeliveryMethodsService],

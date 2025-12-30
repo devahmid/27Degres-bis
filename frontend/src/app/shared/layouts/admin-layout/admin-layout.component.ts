@@ -85,6 +85,10 @@ import { Router } from '@angular/router';
              class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
             <mat-icon class="mr-2 align-middle text-sm">bar_chart</mat-icon>Statistiques
           </a>
+            <a routerLink="/admin/contact-messages" routerLinkActive="text-primary border-b-2 border-primary" 
+             class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
+            <mat-icon class="mr-2 align-middle text-sm">mail</mat-icon>Messages
+          </a>
         </nav>
         
         <!-- Mobile Navigation -->
@@ -149,6 +153,11 @@ import { Router } from '@angular/router';
                (click)="mobileMenuOpen = false"
                class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
               <mat-icon class="mr-2 align-middle text-sm">bar_chart</mat-icon>Statistiques
+            </a>
+              <a routerLink="/admin/contact-messages" routerLinkActive="text-primary font-semibold"
+               (click)="mobileMenuOpen = false"
+               class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
+              <mat-icon class="mr-2 align-middle text-sm">mail</mat-icon>Messages
             </a>
           </nav>
         </div>

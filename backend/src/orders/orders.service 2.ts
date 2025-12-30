@@ -7,8 +7,6 @@ import { Product } from '../products/entities/product.entity';
 import { DeliveryMethod } from './entities/delivery-method.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { MailService } from '../mail/mail.service';
-import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class OrdersService {
@@ -22,7 +20,6 @@ export class OrdersService {
     @InjectRepository(DeliveryMethod)
     private deliveryMethodsRepository: Repository<DeliveryMethod>,
     private dataSource: DataSource,
-    private mailService: MailService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, userId: number): Promise<Order> {
@@ -115,21 +112,6 @@ export class OrdersService {
       }
 
       await queryRunner.commitTransaction();
-
-      // Envoyer un email de confirmation de commande
-      try {
-        const user = await queryRunner.manager.findOne(User, { where: { id: userId } });
-        if (user) {
-          await this.mailService.sendOrderConfirmationEmail(
-            user.email,
-            savedOrder.id,
-            Number(totalAmount)
-          );
-        }
-      } catch (error) {
-        console.error('Erreur lors de l\'envoi de l\'email de confirmation:', error);
-        // Ne pas faire échouer la commande si l'email échoue
-      }
 
       // Retourner la commande avec ses relations
       return this.findOne(savedOrder.id);
@@ -227,35 +209,6 @@ export class OrdersService {
 
     order.status = OrderStatus.CANCELLED;
     await this.ordersRepository.save(order);
-  }
-
-  async remove(id: number): Promise<void> {
-    const order = await this.findOne(id);
-
-    // Conditions pour supprimer une commande :
-    // - Ne peut pas supprimer une commande déjà livrée
-    // - Ne peut pas supprimer une commande payée (sauf si annulée)
-    if (order.status === OrderStatus.DELIVERED) {
-      throw new BadRequestException('Impossible de supprimer une commande déjà livrée');
-    }
-
-    if (order.paymentStatus === 'paid' && order.status !== OrderStatus.CANCELLED) {
-      throw new BadRequestException('Impossible de supprimer une commande payée. Annulez-la d\'abord.');
-    }
-
-    // Si la commande n'est pas annulée, restaurer le stock
-    if (order.status !== OrderStatus.CANCELLED) {
-      for (const item of order.items) {
-        await this.productsRepository.increment(
-          { id: item.productId },
-          'stockQuantity',
-          item.quantity,
-        );
-      }
-    }
-
-    // Supprimer la commande (les items seront supprimés en cascade)
-    await this.ordersRepository.remove(order);
   }
 
   async getStatistics(): Promise<{

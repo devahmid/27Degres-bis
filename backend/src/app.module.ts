@@ -15,6 +15,7 @@ import { StorageModule } from './storage/storage.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { OrdersModule } from './orders/orders.module';
     GalleryModule,
     ProductsModule,
     OrdersModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

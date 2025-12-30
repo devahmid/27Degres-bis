@@ -62,6 +62,12 @@ export class User {
   @Column({ name: 'consent_newsletter', default: false })
   consentNewsletter: boolean;
 
+  @Column({ name: 'password_reset_token', nullable: true, length: 255 })
+  passwordResetToken?: string;
+
+  @Column({ name: 'password_reset_expires', nullable: true })
+  passwordResetExpires?: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
