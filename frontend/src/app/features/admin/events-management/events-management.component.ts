@@ -1,17 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { EventsService, Event } from '../../../core/services/events.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
 import { AddEventDialogComponent } from './add-event-dialog.component';
 import { ManageEventImagesDialogComponent } from './manage-event-images-dialog.component';
+import { EventRegistrationsDialogComponent } from './event-registrations-dialog.component';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
@@ -25,14 +25,13 @@ import { map, startWith } from 'rxjs/operators';
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatMenuModule,
     MatDialogModule,
     DateFormatPipe
   ],
   templateUrl: './events-management.component.html',
   styleUrl: './events-management.component.scss'
 })
-export class EventsManagementComponent implements OnInit {
+export class EventsManagementComponent implements OnInit, OnDestroy {
   private eventsSubject = new BehaviorSubject<Event[]>([]);
   events$ = this.eventsSubject.asObservable();
   filteredEvents$!: Observable<Event[]>;
@@ -40,6 +39,9 @@ export class EventsManagementComponent implements OnInit {
   filterType = '';
   filterStatus = '';
   displayedColumns: string[] = ['title', 'type', 'startDate', 'location', 'status', 'actions'];
+  openMenuId: number | null = null;
+  private clickTimeout: any = null;
+  private positionInterval: any = null;
 
   constructor(
     private eventsService: EventsService,
@@ -49,6 +51,23 @@ export class EventsManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadEvents();
+    
+    // Repositionner le menu lors du scroll
+    window.addEventListener('scroll', () => {
+      if (this.openMenuId !== null) {
+        this.positionMenu(this.openMenuId);
+      }
+    }, true);
+  }
+
+  ngOnDestroy(): void {
+    if (this.positionInterval) {
+      clearInterval(this.positionInterval);
+    }
+    if (this.clickTimeout) {
+      clearTimeout(this.clickTimeout);
+    }
+    this.closeMenus();
   }
 
   loadEvents(): void {
@@ -120,6 +139,7 @@ export class EventsManagementComponent implements OnInit {
   }
 
   editEvent(event: Event): void {
+    this.closeMenus();
     const dialogRef = this.dialog.open(AddEventDialogComponent, {
       width: '90%',
       maxWidth: '900px',
@@ -135,6 +155,7 @@ export class EventsManagementComponent implements OnInit {
   }
 
   deleteEvent(event: Event): void {
+    this.closeMenus();
     if (confirm(`Êtes-vous sûr de vouloir supprimer l'événement "${event.title}" ?`)) {
       this.eventsService.deleteEvent(event.id).subscribe({
         next: () => {
@@ -149,6 +170,7 @@ export class EventsManagementComponent implements OnInit {
   }
 
   manageImages(event: Event): void {
+    this.closeMenus();
     const dialogRef = this.dialog.open(ManageEventImagesDialogComponent, {
       width: '90%',
       maxWidth: '1000px',
@@ -173,5 +195,140 @@ export class EventsManagementComponent implements OnInit {
       'cancelled': 'Annulé'
     };
     return labels[status] || status;
+  }
+
+  toggleMenu(eventId: number, mouseEvent?: MouseEvent): void {
+    if (mouseEvent) {
+      mouseEvent.stopPropagation();
+    }
+    this.openMenuId = this.openMenuId === eventId ? null : eventId;
+    
+    // Positionner le menu dynamiquement si ouvert
+    if (this.openMenuId === eventId) {
+      setTimeout(() => {
+        this.positionMenu(eventId);
+      }, 0);
+      
+      // Repositionner continuellement pendant que le menu est ouvert
+      if (this.positionInterval) {
+        clearInterval(this.positionInterval);
+      }
+      this.positionInterval = setInterval(() => {
+        if (this.openMenuId === eventId) {
+          this.positionMenu(eventId);
+        } else {
+          clearInterval(this.positionInterval);
+        }
+      }, 100);
+    } else {
+      if (this.positionInterval) {
+        clearInterval(this.positionInterval);
+        this.positionInterval = null;
+      }
+    }
+  }
+
+  closeMenus(): void {
+    if (this.openMenuId !== null) {
+      const menu = document.querySelector(`[data-menu-event-id="${this.openMenuId}"]`) as HTMLElement;
+      if (menu) {
+        // Trouver le td parent original
+        const button = document.querySelector(`[data-event-id="${this.openMenuId}"]`) as HTMLElement;
+        if (button) {
+          const originalTd = button.closest('td');
+          if (originalTd && menu.parentElement === document.body) {
+            originalTd.appendChild(menu);
+          }
+        }
+      }
+    }
+    this.openMenuId = null;
+    if (this.positionInterval) {
+      clearInterval(this.positionInterval);
+      this.positionInterval = null;
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const isMenuButton = target.closest('[data-event-id]');
+    const isMenuDropdown = target.closest('.menu-dropdown');
+    const isMenuItem = target.closest('.menu-item');
+
+    if (!isMenuButton && !isMenuDropdown && !isMenuItem) {
+      this.clickTimeout = setTimeout(() => {
+        this.closeMenus();
+      }, 0);
+    } else if (isMenuButton || isMenuDropdown || isMenuItem) {
+      if (this.clickTimeout) {
+        clearTimeout(this.clickTimeout);
+        this.clickTimeout = null;
+      }
+    }
+  }
+
+  private positionMenu(eventId: number): void {
+    const button = document.querySelector(`[data-event-id="${eventId}"]`) as HTMLElement;
+    const menu = document.querySelector(`[data-menu-event-id="${eventId}"]`) as HTMLElement;
+    
+    if (!button || !menu) return;
+
+    const buttonRect = button.getBoundingClientRect();
+    const footer = document.querySelector('app-footer') as HTMLElement;
+    const footerTop = footer ? footer.getBoundingClientRect().top : window.innerHeight;
+    const footerZIndex = footer ? parseInt(window.getComputedStyle(footer).zIndex || '0') : 0;
+
+    // Déplacer le menu vers document.body pour éviter les problèmes de z-index
+    const originalParent = menu.parentElement;
+    const originalTd = originalParent && originalParent.tagName === 'TD' ? originalParent : null;
+    if (originalParent && originalParent.tagName !== 'BODY') {
+      document.body.appendChild(menu);
+    }
+
+    // Attendre que le menu soit dans le DOM pour calculer sa hauteur
+    setTimeout(() => {
+      const menuHeight = menu.offsetHeight || 200;
+      
+      // Calculer la position du menu
+      let top = buttonRect.bottom + 4;
+      
+      // Vérifier si le menu dépasse le footer ou le bas de l'écran
+      if (top + menuHeight > footerTop || top + menuHeight > window.innerHeight) {
+        top = buttonRect.top - menuHeight - 4;
+        if (top < 0) {
+          top = 4;
+        }
+      }
+
+      const left = buttonRect.right - (menu.offsetWidth || 200);
+      const zIndex = Math.max(100000, footerZIndex + 100000);
+
+      menu.style.cssText = `
+        position: fixed !important;
+        left: ${left}px !important;
+        top: ${top}px !important;
+        z-index: ${zIndex} !important;
+        background: white !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        border: 1px solid #e5e7eb !important;
+        padding: 0.5rem !important;
+        min-width: 200px !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin: 0 !important;
+      `;
+    }, 0);
+  }
+
+  viewRegistrations(event: Event): void {
+    this.closeMenus();
+    const dialogRef = this.dialog.open(EventRegistrationsDialogComponent, {
+      width: '90%',
+      maxWidth: '800px',
+      data: event
+    });
   }
 }

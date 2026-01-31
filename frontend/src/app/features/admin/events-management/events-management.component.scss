@@ -1,5 +1,31 @@
 // Styles spécifiques pour la gestion des événements
 
+td.relative {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+mat-card-content {
+  overflow: visible !important;
+}
+
+mat-card {
+  overflow: visible !important;
+}
+
+.menu-dropdown {
+  position: fixed !important;
+  z-index: 99999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+::ng-deep .menu-dropdown {
+  z-index: 99999 !important;
+  position: fixed !important;
+}
+
 
 
 

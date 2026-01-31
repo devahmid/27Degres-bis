@@ -29,7 +29,7 @@ import { TruncatePipe } from '../../shared/pipes/truncate.pipe';
 })
 export class HomeComponent implements OnInit {
   recentPosts$!: Observable<Post[]>;
-  upcomingEvent$!: Observable<Event | null>;
+  upcomingEvents$!: Observable<Event[]>;
   heroImageUrl = '/assets/images/hero-image.webp'; // Chemin de l'image hero
   hasHeroImage = true; // Par défaut, on essaie d'afficher l'image
 
@@ -37,7 +37,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.recentPosts$ = this.http.get<Post[]>(`${environment.apiUrl}/posts/recent`);
-    this.upcomingEvent$ = this.http.get<Event | null>(`${environment.apiUrl}/events/upcoming`);
+    this.upcomingEvents$ = this.http.get<Event[]>(`${environment.apiUrl}/events/upcoming?limit=3`);
   }
 
   onImageError(): void {

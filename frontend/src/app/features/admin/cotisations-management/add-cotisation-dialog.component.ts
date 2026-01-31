@@ -72,7 +72,7 @@ import { User } from '../../../core/models/user.model';
               step="0.01"
               min="0"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              placeholder="25.00">
+              placeholder="60.00">
             <div *ngIf="cotisationForm.get('amount')?.hasError('required') && cotisationForm.get('amount')?.touched" 
                  class="text-red-500 text-sm mt-1">
               Le montant est requis
@@ -155,7 +155,7 @@ export class AddCotisationDialogComponent implements OnInit {
     this.cotisationForm = this.fb.group({
       userId: ['', [Validators.required]],
       year: [this.currentYear, [Validators.required, Validators.min(this.currentYear - 5)]],
-      amount: ['25.00', [Validators.required, Validators.min(0)]],
+      amount: ['60.00', [Validators.required, Validators.min(0)]],
       status: ['pending', [Validators.required]],
       paymentMethod: [''],
       transactionId: ['']

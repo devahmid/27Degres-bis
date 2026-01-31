@@ -8,7 +8,7 @@
       </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <div [innerHTML]="post.content" class="prose max-w-none"></div>
+      <div [innerHTML]="post.content | formatContent" class="prose max-w-none article-content"></div>
     </mat-card-content>
   </mat-card>
 

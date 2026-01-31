@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { PostsService, Post } from '../../../core/services/posts.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { RichTextEditorComponent } from '../../../shared/components/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-add-post-dialog',
@@ -15,7 +16,8 @@ import { NotificationService } from '../../../core/services/notification.service
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    RichTextEditorComponent
   ],
   template: `
     <div class="p-6 max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -49,16 +51,15 @@ import { NotificationService } from '../../../core/services/notification.service
 
         <div>
           <label class="block text-dark font-medium mb-2">Contenu *</label>
-          <textarea 
-            formControlName="content"
-            rows="10"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-            placeholder="Contenu complet de l'actualité"></textarea>
+          <app-rich-text-editor formControlName="content"></app-rich-text-editor>
           <div *ngIf="postForm.get('content')?.hasError('required') && postForm.get('content')?.touched" 
                class="text-red-500 text-sm mt-1">
             Le contenu est requis
           </div>
+          <p class="text-sm text-gray-500 mt-2">
+            <mat-icon class="text-sm align-middle">info</mat-icon>
+            Utilisez la barre d'outils pour formater votre texte (gras, italique, listes, etc.)
+          </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -9,7 +9,6 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { AddMemberDialogComponent } from './add-member-dialog.component';
 import { EditMemberDialogComponent } from './edit-member-dialog.component';
 import { SendMessageDialogComponent } from './send-message-dialog.component';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -30,203 +29,25 @@ import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
     MatIconModule,
     MatTableModule,
     MatDialogModule,
-    MatMenuModule,
     MatDividerModule,
     FormsModule,
     DateFormatPipe
   ],
-  template: `
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 class="text-4xl font-bold mb-2 text-dark">Gestion des Membres</h1>
-          <p class="text-gray-600">Gérez tous les membres de l'association</p>
-        </div>
-        <button mat-raised-button color="primary" (click)="openAddDialog()" class="mt-4 md:mt-0">
-          <mat-icon class="mr-2">person_add</mat-icon>
-          Ajouter un membre
-        </button>
-      </div>
-
-      <!-- Filters -->
-      <mat-card class="mb-6">
-        <mat-card-content>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label class="block text-dark font-medium mb-2">Rechercher</label>
-              <div class="relative">
-                <mat-icon class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</mat-icon>
-                <input 
-                  type="text" 
-                  [(ngModel)]="searchTerm" 
-                  (ngModelChange)="onSearchChange()" 
-                  placeholder="Nom, prénom, email..."
-                  class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
-              </div>
-            </div>
-            <div>
-              <label class="block text-dark font-medium mb-2">Rôle</label>
-              <select 
-                [(ngModel)]="filterRole" 
-                (ngModelChange)="onSearchChange()"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white">
-                <option value="">Tous</option>
-                <option value="admin">Admin</option>
-                <option value="bureau">Bureau</option>
-                <option value="membre">Membre</option>
-                <option value="visiteur">Visiteur</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-dark font-medium mb-2">Statut</label>
-              <select 
-                [(ngModel)]="filterStatus" 
-                (ngModelChange)="onSearchChange()"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white">
-                <option value="">Tous</option>
-                <option value="active">Actifs</option>
-                <option value="inactive">Inactifs</option>
-              </select>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Members Table -->
-      <mat-card>
-        <mat-card-content>
-          <table mat-table [dataSource]="filteredMembers$" class="w-full">
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Nom</th>
-              <td mat-cell *matCellDef="let member">
-                <div class="flex items-center">
-                  <mat-icon class="mr-2 text-gray-400">person</mat-icon>
-                  <span>{{ member.firstName }} {{ member.lastName }}</span>
-                </div>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="email">
-              <th mat-header-cell *matHeaderCellDef>Email</th>
-              <td mat-cell *matCellDef="let member">{{ member.email }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="role">
-              <th mat-header-cell *matHeaderCellDef>Rôle</th>
-              <td mat-cell *matCellDef="let member">
-                <span [ngClass]="{
-                  'bg-red-100 text-red-800': member.role === 'admin',
-                  'bg-blue-100 text-blue-800': member.role === 'bureau',
-                  'bg-green-100 text-green-800': member.role === 'membre',
-                  'bg-gray-100 text-gray-800': member.role === 'visiteur'
-                }" class="px-2 py-1 rounded-full text-xs font-medium capitalize">
-                  {{ member.role }}
-                </span>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef>Statut</th>
-              <td mat-cell *matCellDef="let member">
-                <span [ngClass]="{
-                  'bg-green-100 text-green-800': member.isActive,
-                  'bg-gray-100 text-gray-800': !member.isActive
-                }" class="px-2 py-1 rounded-full text-xs font-medium">
-                  {{ member.isActive ? 'Actif' : 'Inactif' }}
-                </span>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="joinDate">
-              <th mat-header-cell *matHeaderCellDef>Date d'adhésion</th>
-              <td mat-cell *matCellDef="let member">{{ member.joinDate | dateFormat }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let member; let i = index">
-                <button mat-icon-button [matMenuTriggerFor]="menu" [matMenuTriggerData]="{member: member}" [disableRipple]="false" type="button">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-          
-          <!-- Menu défini une seule fois en dehors du tableau -->
-          <mat-menu #menu="matMenu" [hasBackdrop]="false">
-            <ng-template matMenuContent let-member="member">
-              <button mat-menu-item (click)="editMember(member)">
-                <mat-icon>edit</mat-icon>
-                <span>Modifier</span>
-              </button>
-              <button mat-menu-item (click)="sendMessage(member)">
-                <mat-icon>email</mat-icon>
-                <span>Envoyer un message</span>
-              </button>
-              <mat-divider></mat-divider>
-              <button mat-menu-item [matMenuTriggerFor]="roleMenu" [matMenuTriggerData]="{member: member}">
-                <mat-icon>admin_panel_settings</mat-icon>
-                <span>Changer le rôle</span>
-                <mat-icon class="ml-auto">arrow_right</mat-icon>
-              </button>
-              <button mat-menu-item (click)="toggleMemberStatus(member)">
-                <mat-icon>{{ member.isActive ? 'block' : 'check_circle' }}</mat-icon>
-                <span>{{ member.isActive ? 'Bloquer' : 'Débloquer' }}</span>
-              </button>
-              <mat-divider></mat-divider>
-              <button mat-menu-item (click)="viewMemberCotisations(member)">
-                <mat-icon>credit_card</mat-icon>
-                <span>Voir cotisations</span>
-              </button>
-              <button mat-menu-item (click)="deleteMember(member)" class="text-red-600">
-                <mat-icon>delete</mat-icon>
-                <span>Supprimer</span>
-              </button>
-            </ng-template>
-          </mat-menu>
-
-          <!-- Sous-menu pour les rôles -->
-          <mat-menu #roleMenu="matMenu">
-            <ng-template matMenuContent let-member="member">
-              <button mat-menu-item (click)="changeRole(member, 'admin')">
-                <mat-icon>admin_panel_settings</mat-icon>
-                <span>Admin</span>
-              </button>
-              <button mat-menu-item (click)="changeRole(member, 'bureau')">
-                <mat-icon>group</mat-icon>
-                <span>Bureau</span>
-              </button>
-              <button mat-menu-item (click)="changeRole(member, 'membre')">
-                <mat-icon>person</mat-icon>
-                <span>Membre</span>
-              </button>
-              <button mat-menu-item (click)="changeRole(member, 'visiteur')">
-                <mat-icon>visibility</mat-icon>
-                <span>Visiteur</span>
-              </button>
-            </ng-template>
-          </mat-menu>
-          
-          <div *ngIf="(filteredMembers$ | async)?.length === 0" class="text-center py-8 text-gray-500">
-            Aucun membre trouvé
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
+  templateUrl: './members-management.component.html',
   styleUrl: './members-management.component.scss'
 })
-export class MembersManagementComponent implements OnInit {
+export class MembersManagementComponent implements OnInit, OnDestroy {
   members$!: Observable<User[]>;
   filteredMembers$!: Observable<User[]>;
   searchTerm = '';
   filterRole = '';
   filterStatus = '';
   displayedColumns: string[] = ['name', 'email', 'role', 'status', 'joinDate', 'actions'];
-
+  openMenuId: number | null = null;
+  openRoleMenuId: number | null = null;
+  private clickTimeout: any = null;
+  private positionInterval: any = null;
+  
   constructor(
     private http: HttpClient,
     private notification: NotificationService,
@@ -236,6 +57,169 @@ export class MembersManagementComponent implements OnInit {
   ngOnInit(): void {
     this.members$ = this.http.get<User[]>(`${environment.apiUrl}/users/admin/all`);
     this.filteredMembers$ = this.members$;
+    
+    // Repositionner le menu lors du scroll
+    window.addEventListener('scroll', () => {
+      if (this.openMenuId !== null) {
+        this.positionMenu(this.openMenuId);
+      }
+    }, true);
+  }
+  
+  toggleMenu(memberId: number, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.openMenuId = this.openMenuId === memberId ? null : memberId;
+    this.openRoleMenuId = null;
+    
+    // Positionner le menu dynamiquement si ouvert
+    if (this.openMenuId === memberId) {
+      setTimeout(() => {
+        this.positionMenu(memberId);
+      }, 0);
+      
+      // Repositionner continuellement pendant que le menu est ouvert
+      if (this.positionInterval) {
+        clearInterval(this.positionInterval);
+      }
+      this.positionInterval = setInterval(() => {
+        if (this.openMenuId === memberId) {
+          this.positionMenu(memberId);
+        } else {
+          clearInterval(this.positionInterval);
+        }
+      }, 100);
+    } else {
+      if (this.positionInterval) {
+        clearInterval(this.positionInterval);
+        this.positionInterval = null;
+      }
+    }
+  }
+  
+  private positionMenu(memberId: number): void {
+    const button = document.querySelector(`button[data-member-id="${memberId}"]`) as HTMLElement;
+    const menu = document.querySelector(`.menu-dropdown[data-member-id="${memberId}"]`) as HTMLElement;
+    
+    if (button && menu) {
+      const buttonRect = button.getBoundingClientRect();
+      const menuHeight = menu.offsetHeight || 300;
+      const viewportHeight = window.innerHeight;
+      
+      // Trouver le footer pour connaître sa position
+      const footer = document.querySelector('footer') as HTMLElement;
+      const footerTop = footer ? footer.getBoundingClientRect().top : viewportHeight;
+      const footerZIndex = footer ? parseInt(window.getComputedStyle(footer).zIndex) || 1 : 1;
+      
+      // Positionner le menu à droite du bouton
+      let top = buttonRect.bottom + 4;
+      
+      // Si le menu dépasse en bas (en tenant compte du footer), l'afficher au-dessus du bouton
+      if (top + menuHeight > footerTop - 10) {
+        top = buttonRect.top - menuHeight - 4;
+        // Si même au-dessus ça dépasse, le mettre juste au-dessus du footer
+        if (top < 0) {
+          top = Math.max(10, footerTop - menuHeight - 10);
+        }
+      }
+      
+      // Calculer la position left pour aligner à droite du bouton
+      const menuWidth = menu.offsetWidth || 200;
+      const left = Math.max(10, buttonRect.right - menuWidth);
+      
+      // Utiliser un z-index beaucoup plus élevé que le footer
+      const menuZIndex = Math.max(100000, footerZIndex + 100000);
+      
+      // Déplacer le menu dans le body pour éviter les problèmes de contexte d'empilement
+      if (menu.parentElement !== document.body) {
+        document.body.appendChild(menu);
+      }
+      
+      menu.style.cssText = `
+        position: fixed !important;
+        left: ${left}px !important;
+        top: ${top}px !important;
+        z-index: ${menuZIndex} !important;
+        background: white !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+        border: 1px solid #e5e7eb !important;
+        padding: 8px 0 !important;
+        min-width: 200px !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin: 0 !important;
+      `;
+    }
+  }
+  
+  ngOnDestroy(): void {
+    // Nettoyer les intervals
+    if (this.positionInterval) {
+      clearInterval(this.positionInterval);
+    }
+    if (this.clickTimeout) {
+      clearTimeout(this.clickTimeout);
+    }
+    
+    // Nettoyer les menus du body si le composant est détruit
+    const menus = document.querySelectorAll('.menu-dropdown');
+    menus.forEach(menu => {
+      if (menu.parentElement === document.body) {
+        menu.remove();
+      }
+    });
+  }
+  
+  toggleRoleMenu(memberId: number, event: Event): void {
+    event.stopPropagation();
+    this.openRoleMenuId = this.openRoleMenuId === memberId ? null : memberId;
+  }
+  
+  closeMenus(): void {
+    // Remettre les menus dans leur conteneur d'origine avant de fermer
+    const menus = document.querySelectorAll('.menu-dropdown');
+    menus.forEach(menu => {
+      if (menu.parentElement === document.body) {
+        // Trouver le td parent original
+        const memberId = menu.getAttribute('data-member-id');
+        if (memberId) {
+          const button = document.querySelector(`button[data-member-id="${memberId}"]`);
+          if (button) {
+            const td = button.closest('td');
+            if (td) {
+              td.appendChild(menu);
+            }
+          }
+        }
+      }
+    });
+    
+    this.openMenuId = null;
+    this.openRoleMenuId = null;
+  }
+  
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    // Annuler le timeout précédent
+    if (this.clickTimeout) {
+      clearTimeout(this.clickTimeout);
+    }
+    
+    // Attendre un peu avant de vérifier (pour laisser le temps au toggleMenu de s'exécuter)
+    this.clickTimeout = setTimeout(() => {
+      const target = event.target as HTMLElement;
+      // Ne pas fermer si on clique sur le bouton ou dans le menu
+      const clickedMenu = target.closest('.menu-dropdown');
+      const clickedButton = target.closest('button[mat-icon-button]');
+      const clickedMenuItem = target.closest('.menu-item');
+      
+      if (!clickedMenu && !clickedButton && !clickedMenuItem) {
+        this.closeMenus();
+      }
+    }, 10);
   }
 
   onSearchChange(): void {

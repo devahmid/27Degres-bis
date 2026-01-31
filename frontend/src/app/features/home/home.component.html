@@ -73,38 +73,46 @@
   </div>
 </section>
 
-<!-- Prochain événement -->
-<section class="py-20 bg-white" *ngIf="upcomingEvent$ | async as event">
-  <div class="container mx-auto px-4">
+<!-- Prochains événements -->
+<section class="py-20 bg-white" *ngIf="(upcomingEvents$ | async) as events">
+  <div class="container mx-auto px-4" *ngIf="events && events.length > 0">
     <div class="text-center mb-12">
-      <h2 class="text-4xl font-bold mb-4 text-dark">Prochain Événement</h2>
-      <p class="text-xl text-gray-600">Ne manquez pas notre prochaine activité</p>
+      <h2 class="text-4xl font-bold mb-4 text-dark">Prochains Événements</h2>
+      <p class="text-xl text-gray-600">Ne manquez pas nos prochaines activités</p>
     </div>
-    <mat-card class="max-w-4xl mx-auto shadow-xl">
-      <img *ngIf="event.featuredImage" mat-card-image [src]="event.featuredImage" [alt]="event.title" class="h-96 object-cover">
-      <mat-card-header>
-        <mat-card-title class="text-3xl">{{ event.title }}</mat-card-title>
-        <mat-card-subtitle class="flex items-center gap-4 mt-4 text-lg">
-          <span class="flex items-center gap-2">
-            <mat-icon>event</mat-icon>
-            {{ event.startDate | dateFormat:'dd MMMM yyyy' }}
-          </span>
-          <span *ngIf="event.location" class="flex items-center gap-2">
-            <mat-icon>location_on</mat-icon>
-            {{ event.location }}
-          </span>
-        </mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <p class="text-lg text-gray-700">{{ event.description | truncate:200 }}</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-raised-button color="primary" [routerLink]="['/events', event.id]" class="px-8">
-          <span>Voir les détails</span>
-          <mat-icon class="ml-2">arrow_forward</mat-icon>
-        </button>
-      </mat-card-actions>
-    </mat-card>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <mat-card *ngFor="let event of events" class="hover:shadow-xl transition-all duration-300 cursor-pointer h-full flex flex-col">
+        <img *ngIf="event.featuredImage" mat-card-image [src]="event.featuredImage" [alt]="event.title" class="h-48 object-cover">
+        <mat-card-header>
+          <mat-card-title class="line-clamp-2">{{ event.title }}</mat-card-title>
+          <mat-card-subtitle class="flex flex-col gap-2 mt-2">
+            <span class="flex items-center gap-2">
+              <mat-icon class="text-sm">event</mat-icon>
+              <span>{{ event.startDate | dateFormat:'dd MMMM yyyy' }}</span>
+            </span>
+            <span *ngIf="event.location" class="flex items-center gap-2">
+              <mat-icon class="text-sm">location_on</mat-icon>
+              <span>{{ event.location }}</span>
+            </span>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="flex-grow">
+          <p class="text-gray-600 line-clamp-3">{{ event.description | truncate:150 }}</p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button color="primary" [routerLink]="['/events', event.id]" class="w-full">
+            <span>Voir les détails</span>
+            <mat-icon class="ml-2">arrow_forward</mat-icon>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+    <div class="text-center mt-12">
+      <a mat-raised-button color="primary" routerLink="/events" class="px-8">
+        <span>Voir tous les événements</span>
+        <mat-icon class="ml-2">arrow_forward</mat-icon>
+      </a>
+    </div>
   </div>
 </section>
 

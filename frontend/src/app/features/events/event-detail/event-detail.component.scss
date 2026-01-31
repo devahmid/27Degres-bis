@@ -1,10 +1,82 @@
-// Styles spécifiques au détail d'événement
+.article-content {
+  line-height: 1.8;
+  color: #374151;
+}
 
+.article-content h2 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #111827;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
 
+.article-content h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #1f2937;
+}
 
+.article-content p {
+  margin-bottom: 1.25rem;
+  text-align: justify;
+}
 
+.article-content ul,
+.article-content ol {
+  margin-left: 2rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 1rem;
+}
 
+.article-content ul {
+  list-style-type: disc;
+}
 
+.article-content ol {
+  list-style-type: decimal;
+}
 
+.article-content li {
+  margin-bottom: 0.5rem;
+}
 
+.article-content strong {
+  font-weight: 700;
+  color: #111827;
+}
 
+.article-content em {
+  font-style: italic;
+}
+
+.article-content u {
+  text-decoration: underline;
+}
+
+.article-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.article-content a:hover {
+  color: #2563eb;
+}
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+// Styles pour les emojis et caractères spéciaux
+.article-content {
+  font-size: 1.125rem;
+}

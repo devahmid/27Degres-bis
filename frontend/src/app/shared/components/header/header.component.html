@@ -68,10 +68,11 @@
         <mat-menu 
           #userMenu="matMenu" 
           class="user-menu"
-          xPosition="before"
+          xPosition="after"
           yPosition="below"
           [overlapTrigger]="false"
           panelClass="user-menu-panel"
+          [class]="'user-menu'"
           (closed)="onMenuClosed()">
           <div class="user-menu-header">
             <div class="user-info">

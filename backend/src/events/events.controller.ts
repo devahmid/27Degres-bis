@@ -126,6 +126,13 @@ export class EventsController {
     return this.eventsService.update(+id, updateEventDto, featuredImage);
   }
 
+  @Get(':id/registrations')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'bureau')
+  getRegistrations(@Param('id', ParseIntPipe) id: number) {
+    return this.eventsService.getEventRegistrations(id);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'bureau')

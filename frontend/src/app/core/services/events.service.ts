@@ -159,5 +159,12 @@ export class EventsService {
   getAllEventImages(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/images`);
   }
+
+  /**
+   * Récupère les inscriptions d'un événement (admin)
+   */
+  getEventRegistrations(eventId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${eventId}/registrations`);
+  }
 }
 

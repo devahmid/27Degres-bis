@@ -12,6 +12,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Post, Comment } from '../../../core/models/post.model';
 import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
+import { FormatContentPipe } from '../../../shared/pipes/format-content.pipe';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
@@ -25,7 +26,8 @@ import { NotificationService } from '../../../core/services/notification.service
     MatButtonModule,
     MatIconModule,
     ReactiveFormsModule,
-    DateFormatPipe
+    DateFormatPipe,
+    FormatContentPipe
   ],
   templateUrl: './news-detail.component.html',
   styleUrl: './news-detail.component.scss'

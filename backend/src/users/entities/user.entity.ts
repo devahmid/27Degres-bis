@@ -7,7 +7,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Cotisation } from '../../cotisations/entities/cotisation.entity';
-import { Event } from '../../events/entities/event.entity';
 import { Post } from '../../posts/entities/post.entity';
 import { Comment } from '../../posts/entities/comment.entity';
 
@@ -77,8 +76,8 @@ export class User {
   @OneToMany(() => Cotisation, (cotisation) => cotisation.user)
   cotisations: Cotisation[];
 
-  @OneToMany(() => Event, (event) => event.createdBy)
-  events: Event[];
+  // Relation events supprimée pour éviter la dépendance circulaire
+  // La relation inverse existe déjà dans Event.creator
 
   @OneToMany(() => Post, (post) => post.author)
   posts: Post[];

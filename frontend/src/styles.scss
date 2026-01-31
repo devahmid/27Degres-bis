@@ -48,8 +48,11 @@ $theme: mat.define-light-theme((
     transform: translate(-50%, -50%) !important;
   }
   
-  // For menus - ABSOLUTELY NO positioning styles - let Angular Material handle it completely
-  // Don't add ANY position, top, left, transform, etc. here
+  // For menus - Laisser Angular Material gérer complètement le positionnement
+  // Ne pas ajouter de styles de position ici
+  &:has(.mat-mdc-menu-panel):not(:has(.user-menu-panel)) {
+    // Laisser Angular Material calculer la position automatiquement
+  }
 }
 
 .mat-mdc-menu-panel {
@@ -118,18 +121,33 @@ $theme: mat.define-light-theme((
     z-index: 99999 !important;
   }
 
-  // Menu overlays - CRITICAL: NO positioning styles - let Angular Material handle it completely
-  // Exception pour le menu utilisateur : forcer le positionnement à droite
-  .cdk-overlay-pane:has(.mat-mdc-menu-panel):not(:has(.user-menu-panel)),
-  .cdk-overlay-pane:not([class*="dialog"]):not([class*="mat-mdc-dialog"]):not(:has(.user-menu-panel)) {
+  // Menu overlays - Forcer la visibilité mais laisser Angular Material gérer le positionnement
+  .cdk-overlay-pane:has(.mat-mdc-menu-panel):not(:has(.user-menu-panel)) {
     z-index: 99999 !important;
-    // NO position, top, left, transform, max-width, max-height - Angular Material will calculate
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    // Laisser Angular Material calculer la position normalement (pas de position, top, left forcés)
   }
   
-  // Menu utilisateur : permettre le positionnement mais forcer à droite
+  // Forcer l'opacité même si définie inline
+  .cdk-overlay-pane[style*="opacity"]:has(.mat-mdc-menu-panel):not(:has(.user-menu-panel)) {
+    opacity: 1 !important;
+  }
+  
+  // Menu utilisateur : permettre le positionnement manuel depuis le TypeScript
   .cdk-overlay-pane:has(.user-menu-panel) {
     z-index: 99999 !important;
-    // Laisser Angular Material calculer mais s'assurer que xPosition="after" fonctionne
+    // Le positionnement sera géré manuellement par le code TypeScript du header component
+    // Permettre le positionnement fixe pour ce menu spécifique
+    // Ne pas laisser Angular Material gérer le positionnement pour ce menu spécifique
+    position: fixed !important;
+  }
+  
+  // Forcer le positionnement à droite pour le menu utilisateur via CSS aussi
+  .cdk-overlay-pane:has(.user-menu-panel) {
+    // Le TS va forcer la position left, mais on peut aider
+    transform-origin: top right !important;
   }
   
   // Dialog overlays - centered (keep these styles)

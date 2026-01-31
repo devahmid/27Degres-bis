@@ -222,5 +222,30 @@ export class EventsService {
     // Supprimer l'entrée de la base de données
     await this.eventImagesRepository.remove(image);
   }
+
+  async getEventRegistrations(eventId: number) {
+    const event = await this.eventsRepository.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${eventId} introuvable`);
+    }
+
+    const registrations = await this.registrationsRepository.find({
+      where: { eventId },
+      relations: ['user'],
+      order: { registeredAt: 'DESC' },
+    });
+
+    return registrations.map(reg => ({
+      id: reg.id,
+      userId: reg.userId,
+      user: {
+        id: reg.user.id,
+        firstName: reg.user.firstName,
+        lastName: reg.user.lastName,
+        email: reg.user.email,
+      },
+      registeredAt: reg.registeredAt,
+    }));
+  }
 }
 

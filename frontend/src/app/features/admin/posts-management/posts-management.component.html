@@ -122,10 +122,35 @@
           <!-- Actions Column -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let post">
-              <button mat-icon-button [matMenuTriggerFor]="postMenu" [matMenuTriggerData]="{post: post}" type="button">
+            <td mat-cell *matCellDef="let post" class="relative">
+              <button 
+                mat-icon-button 
+                type="button"
+                [attr.data-post-id]="post.id"
+                (click)="toggleMenu(post.id, $event)"
+                class="menu-button">
                 <mat-icon>more_vert</mat-icon>
               </button>
+              
+              <!-- Custom Dropdown Menu -->
+              <div 
+                *ngIf="openMenuId === post.id"
+                class="menu-dropdown"
+                [attr.data-menu-post-id]="post.id"
+                (click)="$event.stopPropagation()">
+                <button 
+                  class="menu-item w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  (click)="editPost(post)">
+                  <mat-icon class="text-lg">edit</mat-icon>
+                  <span>Modifier</span>
+                </button>
+                <button 
+                  class="menu-item w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 flex items-center gap-2"
+                  (click)="deletePost(post)">
+                  <mat-icon class="text-lg">delete</mat-icon>
+                  <span>Supprimer</span>
+                </button>
+              </div>
             </td>
           </ng-container>
 
@@ -139,19 +164,5 @@
       </div>
     </mat-card-content>
   </mat-card>
-
-  <!-- Post Actions Menu -->
-  <mat-menu #postMenu="matMenu" [hasBackdrop]="false">
-    <ng-template matMenuContent let-post="post">
-      <button mat-menu-item (click)="editPost(post)">
-        <mat-icon>edit</mat-icon>
-        <span>Modifier</span>
-      </button>
-      <button mat-menu-item (click)="deletePost(post)" class="text-red-600">
-        <mat-icon>delete</mat-icon>
-        <span>Supprimer</span>
-      </button>
-    </ng-template>
-  </mat-menu>
 </div>
 

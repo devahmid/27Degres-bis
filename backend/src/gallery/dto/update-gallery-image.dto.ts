@@ -19,9 +19,7 @@ export class UpdateGalleryImageDto extends PartialType(CreateGalleryImageDto) {
   })
   @IsBoolean()
   @IsOptional()
-  isPublic?: boolean;
-
-  @IsString()
+  isPublic?: boolean;  @IsString()
   @IsOptional()
   category?: string;
 }

@@ -1,10 +1,41 @@
-// Remove backdrop for menus and let Angular Material handle positioning
+// Styles pour les menus dropdown
+.menu-dropdown {
+  position: fixed !important; // Utiliser fixed pour être au-dessus de tout
+  background: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+  border: 1px solid #e5e7eb !important;
+  padding: 8px 0 !important;
+  min-width: 200px !important;
+  z-index: 99999 !important; // Très élevé pour être au-dessus de tout (footer z-index: 1)
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+// S'assurer que le menu est toujours au-dessus du footer
 ::ng-deep {
-  // Hide backdrop for menus - menus don't need backdrop
-  .cdk-overlay-container:has(.mat-mdc-menu-panel) .cdk-overlay-backdrop {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    visibility: hidden !important;
+  .menu-dropdown {
+    z-index: 99999 !important;
+    position: fixed !important;
   }
+  
+  footer {
+    z-index: 1 !important;
+  }
+}
+
+// S'assurer que le td peut contenir le menu
+td.relative {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+// S'assurer que le tableau ne cache pas le menu
+mat-card-content {
+  overflow: visible !important;
+}
+
+mat-card {
+  overflow: visible !important;
 }
