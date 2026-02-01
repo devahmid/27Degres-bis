@@ -67,14 +67,20 @@
       </ng-template>
 
       <!-- Liste des commentaires -->
-      <div class="comments-list">
-        <div *ngFor="let comment of comments$ | async" class="comment-item">
+      <div class="comments-list space-y-4">
+        <div *ngFor="let comment of comments$ | async; let last = last" class="comment-item">
           <div class="comment-header">
-            <mat-icon>account_circle</mat-icon>
-            <span class="comment-author">
-              {{ comment.user?.firstName }} {{ comment.user?.lastName }}
-            </span>
-            <span class="comment-date">{{ comment.createdAt | dateFormat }}</span>
+            <div class="flex items-center gap-3">
+              <div class="comment-avatar">
+                <mat-icon>account_circle</mat-icon>
+              </div>
+              <div class="flex-grow">
+                <div class="comment-author">
+                  {{ comment.user?.firstName }} {{ comment.user?.lastName }}
+                </div>
+                <div class="comment-date">{{ comment.createdAt | dateFormat }}</div>
+              </div>
+            </div>
           </div>
           <div class="comment-content">
             {{ comment.content }}

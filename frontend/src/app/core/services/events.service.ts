@@ -135,8 +135,8 @@ export class EventsService {
   /**
    * S'inscrire à un événement
    */
-  registerToEvent(eventId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${eventId}/register`, {});
+  registerToEvent(eventId: number, registrationData?: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${eventId}/register`, registrationData || {});
   }
 
   /**
@@ -165,6 +165,13 @@ export class EventsService {
    */
   getEventRegistrations(eventId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${eventId}/registrations`);
+  }
+
+  /**
+   * Récupère les inscriptions publiques d'un événement (utilisateurs connectés)
+   */
+  getPublicEventRegistrations(eventId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${eventId}/registrations/public`);
   }
 }
 

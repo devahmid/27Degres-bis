@@ -13,11 +13,27 @@ import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { EventsService } from '../../../core/services/events.service';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { EventRegistrationDialogComponent } from '../event-registration-dialog/event-registration-dialog.component';
+
+interface PublicEventRegistration {
+  id: number;
+  user: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  };
+  availabilityType?: 'full' | 'partial';
+  availabilityDetails?: string;
+  isVolunteer?: boolean;
+  volunteerActivities?: string[];
+  registeredAt: Date;
+}
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatCardModule, MatButtonModule, MatIconModule, DateFormatPipe, FormatContentPipe],
+  imports: [CommonModule, RouterModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, DateFormatPipe, FormatContentPipe],
   templateUrl: './event-detail.component.html',
   styleUrl: './event-detail.component.scss'
 })
@@ -25,13 +41,17 @@ export class EventDetailComponent implements OnInit {
   event$!: Observable<Event>;
   isRegistered = false;
   checkingRegistration = false;
+  registrations: PublicEventRegistration[] = [];
+  loadingRegistrations = false;
+  expandedRegistrationId: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
     public authService: AuthService,
     private notification: NotificationService,
-    private eventsService: EventsService
+    private eventsService: EventsService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -40,11 +60,60 @@ export class EventDetailComponent implements OnInit {
       const id = +eventId;
       this.event$ = this.http.get<Event>(`${environment.apiUrl}/events/${id}`);
       
-      // Vérifier si l'utilisateur est déjà inscrit
+      // Vérifier si l'utilisateur est déjà inscrit et charger les inscriptions
       if (this.authService.isLoggedIn()) {
         this.checkRegistrationStatus(id);
+        this.loadRegistrations(id);
       }
     }
+  }
+
+  loadRegistrations(eventId: number): void {
+    this.loadingRegistrations = true;
+    this.eventsService.getPublicEventRegistrations(eventId).subscribe({
+      next: (registrations) => {
+        this.registrations = registrations;
+        this.loadingRegistrations = false;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des inscriptions:', error);
+        this.loadingRegistrations = false;
+      }
+    });
+  }
+
+  toggleRegistrationDetails(registrationId: number): void {
+    this.expandedRegistrationId = this.expandedRegistrationId === registrationId ? null : registrationId;
+  }
+
+  getAvailabilityLabel(reg: PublicEventRegistration): string {
+    if (reg.availabilityType === 'partial') {
+      return 'Partielle';
+    }
+    return 'Complète';
+  }
+
+  getVolunteerActivitiesLabel(activities: string[]): string {
+    if (!activities || activities.length === 0) return '-';
+    
+    const labels: Record<string, string> = {
+      'courses': 'Courses',
+      'keys': 'Clés',
+      'cooking': 'Cuisine',
+      'setup': 'Installation',
+      'cleaning': 'Nettoyage',
+      'other': 'Autre'
+    };
+    
+    return activities
+      .filter(a => a !== 'other' || !a.startsWith('other:'))
+      .map(a => {
+        if (a.startsWith('other:')) {
+          return `Autre: ${a.replace('other:', '')}`;
+        }
+        return labels[a] || a;
+      })
+      .join(', ');
   }
 
   checkRegistrationStatus(eventId: number): void {
@@ -62,7 +131,7 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
-  registerForEvent(eventId: number): void {
+  registerForEvent(event: Event): void {
     if (!this.authService.isLoggedIn()) {
       this.notification.showError('Vous devez être connecté pour vous inscrire');
       return;
@@ -73,14 +142,19 @@ export class EventDetailComponent implements OnInit {
       return;
     }
 
-    this.eventsService.registerToEvent(eventId).subscribe({
-      next: () => {
-        this.notification.showSuccess('Inscription réussie !');
-        this.isRegistered = true;
-      },
-      error: (error) => {
-        const errorMessage = error.error?.message || 'Erreur lors de l\'inscription';
-        this.notification.showError(errorMessage);
+    // Ouvrir le dialog d'inscription détaillée
+    const dialogRef = this.dialog.open(EventRegistrationDialogComponent, {
+      width: '90%',
+      maxWidth: '700px',
+      disableClose: true,
+      data: event
+    });
+
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        // Recharger le statut d'inscription et les inscriptions
+        this.checkRegistrationStatus(event.id);
+        this.loadRegistrations(event.id);
       }
     });
   }
@@ -95,6 +169,8 @@ export class EventDetailComponent implements OnInit {
         next: () => {
           this.notification.showSuccess('Désinscription réussie');
           this.isRegistered = false;
+          // Recharger les inscriptions
+          this.loadRegistrations(eventId);
         },
         error: (error) => {
           const errorMessage = error.error?.message || 'Erreur lors de la désinscription';

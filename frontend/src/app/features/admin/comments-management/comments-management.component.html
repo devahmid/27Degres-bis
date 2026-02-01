@@ -91,10 +91,36 @@
           <!-- Actions Column -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let comment">
-              <button mat-icon-button [matMenuTriggerFor]="commentMenu" [matMenuTriggerData]="{comment: comment}" type="button">
+            <td mat-cell *matCellDef="let comment" class="relative">
+              <button 
+                mat-icon-button 
+                type="button"
+                [attr.data-comment-id]="comment.id"
+                (click)="toggleMenu(comment.id, $event)"
+                class="menu-button">
                 <mat-icon>more_vert</mat-icon>
               </button>
+              
+              <!-- Custom Dropdown Menu -->
+              <div 
+                *ngIf="openMenuId === comment.id"
+                class="menu-dropdown"
+                [attr.data-menu-comment-id]="comment.id"
+                (click)="$event.stopPropagation()">
+                <button 
+                  *ngIf="!comment.isApproved"
+                  class="menu-item w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  (click)="approveComment(comment)">
+                  <mat-icon class="text-lg">check_circle</mat-icon>
+                  <span>Approuver</span>
+                </button>
+                <button 
+                  class="menu-item w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 flex items-center gap-2"
+                  (click)="deleteComment(comment)">
+                  <mat-icon class="text-lg">delete</mat-icon>
+                  <span>Supprimer</span>
+                </button>
+              </div>
             </td>
           </ng-container>
 
@@ -108,20 +134,6 @@
       </div>
     </mat-card-content>
   </mat-card>
-
-  <!-- Comment Actions Menu -->
-  <mat-menu #commentMenu="matMenu" [hasBackdrop]="false">
-    <ng-template matMenuContent let-comment="comment">
-      <button mat-menu-item (click)="approveComment(comment)" *ngIf="!comment.isApproved">
-        <mat-icon>check_circle</mat-icon>
-        <span>Approuver</span>
-      </button>
-      <button mat-menu-item (click)="deleteComment(comment)" class="text-red-600">
-        <mat-icon>delete</mat-icon>
-        <span>Supprimer</span>
-      </button>
-    </ng-template>
-  </mat-menu>
 </div>
 
 

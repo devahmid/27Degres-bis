@@ -118,7 +118,7 @@ export class EventsService {
     await this.eventsRepository.delete(id);
   }
 
-  async register(eventId: number, userId: number): Promise<EventRegistration> {
+  async register(eventId: number, userId: number, registerDto?: any): Promise<EventRegistration> {
     // Vérifier si l'utilisateur est déjà inscrit à cet événement
     const existingRegistration = await this.registrationsRepository.findOne({
       where: { eventId, userId },
@@ -163,6 +163,11 @@ export class EventsService {
     const registration = this.registrationsRepository.create({
       eventId,
       userId,
+      availabilityType: registerDto?.availabilityType || 'full',
+      availabilityDetails: registerDto?.availabilityDetails,
+      isVolunteer: registerDto?.isVolunteer || false,
+      volunteerActivities: registerDto?.volunteerActivities ? JSON.stringify(registerDto.volunteerActivities) : null,
+      notes: registerDto?.notes,
     });
     return this.registrationsRepository.save(registration);
   }
@@ -244,6 +249,41 @@ export class EventsService {
         lastName: reg.user.lastName,
         email: reg.user.email,
       },
+      availabilityType: reg.availabilityType,
+      availabilityDetails: reg.availabilityDetails,
+      isVolunteer: reg.isVolunteer,
+      volunteerActivities: reg.volunteerActivities ? JSON.parse(reg.volunteerActivities) : [],
+      notes: reg.notes,
+      registeredAt: reg.registeredAt,
+    }));
+  }
+
+  async getPublicEventRegistrations(eventId: number) {
+    const event = await this.eventsRepository.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${eventId} introuvable`);
+    }
+
+    const registrations = await this.registrationsRepository.find({
+      where: { eventId },
+      relations: ['user'],
+      order: { registeredAt: 'DESC' },
+    });
+
+    // Retourner les inscriptions sans les emails pour la confidentialité
+    return registrations.map(reg => ({
+      id: reg.id,
+      user: {
+        id: reg.user.id,
+        firstName: reg.user.firstName,
+        lastName: reg.user.lastName,
+        // Pas d'email pour la confidentialité
+      },
+      availabilityType: reg.availabilityType,
+      availabilityDetails: reg.availabilityDetails,
+      isVolunteer: reg.isVolunteer,
+      volunteerActivities: reg.volunteerActivities ? JSON.parse(reg.volunteerActivities) : [],
+      // Pas de notes pour la confidentialité
       registeredAt: reg.registeredAt,
     }));
   }

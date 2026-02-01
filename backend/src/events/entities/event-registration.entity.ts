@@ -30,6 +30,21 @@ export class EventRegistration {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
+  @Column({ name: 'availability_type', type: 'varchar', length: 20, nullable: true, default: 'full' })
+  availabilityType?: 'full' | 'partial';
+
+  @Column({ name: 'availability_details', type: 'text', nullable: true })
+  availabilityDetails?: string;
+
+  @Column({ name: 'is_volunteer', type: 'boolean', default: false })
+  isVolunteer: boolean;
+
+  @Column({ name: 'volunteer_activities', type: 'text', nullable: true })
+  volunteerActivities?: string;
+
+  @Column({ name: 'notes', type: 'text', nullable: true })
+  notes?: string;
+
   @CreateDateColumn({ name: 'registered_at' })
   registeredAt: Date;
 }

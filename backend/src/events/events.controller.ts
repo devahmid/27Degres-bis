@@ -17,6 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { RegisterEventDto } from './dto/register-event.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -74,8 +75,12 @@ export class EventsController {
 
   @Post(':id/register')
   @UseGuards(JwtAuthGuard)
-  register(@Param('id', ParseIntPipe) id: number, @Request() req) {
-    return this.eventsService.register(id, req.user.id);
+  register(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req,
+    @Body() registerDto?: RegisterEventDto
+  ) {
+    return this.eventsService.register(id, req.user.id, registerDto);
   }
 
   @Delete(':id/register')
@@ -131,6 +136,12 @@ export class EventsController {
   @Roles('admin', 'bureau')
   getRegistrations(@Param('id', ParseIntPipe) id: number) {
     return this.eventsService.getEventRegistrations(id);
+  }
+
+  @Get(':id/registrations/public')
+  @UseGuards(JwtAuthGuard)
+  getPublicRegistrations(@Param('id', ParseIntPipe) id: number) {
+    return this.eventsService.getPublicEventRegistrations(id);
   }
 
   @Delete(':id')
