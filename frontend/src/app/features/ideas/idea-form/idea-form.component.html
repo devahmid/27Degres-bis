@@ -1,0 +1,134 @@
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold text-dark mb-2">
+      {{ isEditMode ? 'Modifier l\'idée' : 'Proposer une nouvelle idée' }}
+    </h1>
+    <p class="text-gray-600">
+      {{ isEditMode ? 'Modifiez les informations de votre idée' : 'Partagez votre idée avec la communauté' }}
+    </p>
+  </div>
+
+  <mat-card class="shadow-lg">
+    <mat-card-content class="p-6">
+      <form [formGroup]="ideaForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div>
+          <label class="block text-dark font-medium mb-2">
+            Titre de l'idée <span class="text-red-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            formControlName="title" 
+            required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            placeholder="Ex: Organiser un tournoi de football">
+          <div *ngIf="ideaForm.get('title')?.hasError('required') && ideaForm.get('title')?.touched" 
+               class="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <mat-icon class="text-sm">error</mat-icon>
+            Le titre est requis
+          </div>
+          <div *ngIf="ideaForm.get('title')?.hasError('minlength') && ideaForm.get('title')?.touched" 
+               class="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <mat-icon class="text-sm">error</mat-icon>
+            Le titre doit contenir au moins 5 caractères
+          </div>
+          <div *ngIf="ideaForm.get('title')?.hasError('maxlength') && ideaForm.get('title')?.touched" 
+               class="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <mat-icon class="text-sm">error</mat-icon>
+            Le titre ne peut pas dépasser 200 caractères
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-dark font-medium mb-2">
+            Description <span class="text-red-500">*</span>
+          </label>
+          <textarea 
+            formControlName="description" 
+            rows="8"
+            required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-y"
+            placeholder="Décrivez votre idée en détail..."></textarea>
+          <p class="text-sm text-gray-500 mt-1 flex items-center gap-1">
+            <mat-icon class="text-sm">info</mat-icon>
+            Minimum 20 caractères
+          </p>
+          <div *ngIf="ideaForm.get('description')?.hasError('required') && ideaForm.get('description')?.touched" 
+               class="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <mat-icon class="text-sm">error</mat-icon>
+            La description est requise
+          </div>
+          <div *ngIf="ideaForm.get('description')?.hasError('minlength') && ideaForm.get('description')?.touched" 
+               class="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <mat-icon class="text-sm">error</mat-icon>
+            La description doit contenir au moins 20 caractères
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-dark font-medium mb-2">
+              Catégorie <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="category"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white text-gray-700">
+              <option *ngFor="let cat of categories" [value]="cat.value">
+                {{ cat.label }}
+              </option>
+            </select>
+            <div *ngIf="ideaForm.get('category')?.hasError('required') && ideaForm.get('category')?.touched" 
+                 class="text-red-500 text-sm mt-1 flex items-center gap-1">
+              <mat-icon class="text-sm">error</mat-icon>
+              La catégorie est requise
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-dark font-medium mb-2">
+              Budget estimé (€)
+              <span class="text-gray-500 text-sm font-normal">(optionnel)</span>
+            </label>
+            <input 
+              type="number" 
+              formControlName="estimatedBudget" 
+              min="0"
+              step="0.01"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              placeholder="Ex: 500">
+            <div *ngIf="ideaForm.get('estimatedBudget')?.hasError('min') && ideaForm.get('estimatedBudget')?.touched" 
+                 class="text-red-500 text-sm mt-1 flex items-center gap-1">
+              <mat-icon class="text-sm">error</mat-icon>
+              Le budget doit être positif
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+          <button 
+            mat-stroked-button 
+            type="button" 
+            [routerLink]="['/ideas']"
+            class="px-6">
+            Annuler
+          </button>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            type="submit"
+            [disabled]="ideaForm.invalid || submitting"
+            class="px-8 flex items-center gap-2">
+            <mat-icon *ngIf="!submitting">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+            <mat-icon *ngIf="submitting" class="animate-spin">refresh</mat-icon>
+            <span>{{ submitting ? 'Envoi...' : (isEditMode ? 'Enregistrer' : 'Proposer l\'idée') }}</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<div *ngIf="loading" class="container mx-auto px-4 py-8 text-center">
+  <mat-icon class="text-4xl text-gray-400 animate-spin">refresh</mat-icon>
+  <p class="mt-4 text-gray-600">Chargement...</p>
+</div>

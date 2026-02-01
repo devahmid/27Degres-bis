@@ -173,5 +173,19 @@ export class EventsService {
   getPublicEventRegistrations(eventId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${eventId}/registrations/public`);
   }
+
+  /**
+   * Récupère les événements auxquels l'utilisateur est inscrit
+   */
+  getMyRegistrations(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/my-registrations`);
+  }
+
+  /**
+   * Met à jour les options d'une inscription
+   */
+  updateRegistration(registrationId: number, updateData: any): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/registrations/${registrationId}`, updateData);
+  }
 }
 

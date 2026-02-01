@@ -1,0 +1,15 @@
+mat-card {
+  transition: transform 0.2s ease-in-out;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+img {
+  transition: transform 0.3s ease-in-out;
+  
+  mat-card:hover & {
+    transform: scale(1.05);
+  }
+}

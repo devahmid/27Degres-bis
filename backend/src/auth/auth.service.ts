@@ -37,15 +37,11 @@ export class AuthService {
 
   async login(user: any) {
     const payload = { email: user.email, sub: user.id, role: user.role };
+    // Retourner tous les champs de l'utilisateur sauf le mot de passe
+    const { password, passwordResetToken, passwordResetExpires, ...userWithoutPassword } = user;
     return {
       accessToken: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-      },
+      user: userWithoutPassword,
     };
   }
 

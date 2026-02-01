@@ -1,0 +1,178 @@
+<div class="container mx-auto px-4 py-8" *ngIf="idea">
+  <mat-card>
+    <mat-card-header class="bg-gradient-to-r from-primary to-accent text-white">
+      <div class="flex-grow w-full">
+        <div class="flex items-start justify-between mb-2">
+          <mat-card-title class="text-3xl mb-2 text-white">{{ idea.title }}</mat-card-title>
+          <div class="flex items-center gap-2" *ngIf="canEditIdea()">
+            <button 
+              mat-icon-button 
+              [routerLink]="['/ideas', idea.id, 'edit']" 
+              class="text-white hover:bg-white/20"
+              [matTooltip]="'Modifier l\'idée'">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button 
+              mat-icon-button 
+              (click)="deleteIdea()" 
+              class="text-white hover:bg-white/20"
+              [matTooltip]="'Supprimer l\'idée'">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+        <mat-card-subtitle class="flex items-center gap-4 flex-wrap text-white/90">
+          <span class="flex items-center gap-1 text-sm">
+            <mat-icon class="text-sm">person</mat-icon>
+            {{ idea.author.firstName }} {{ idea.author.lastName }}
+          </span>
+          <span class="flex items-center gap-1 text-sm">
+            <mat-icon class="text-sm">schedule</mat-icon>
+            {{ idea.createdAt | dateFormat }}
+          </span>
+        </mat-card-subtitle>
+      </div>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="flex items-center gap-2 mb-4 flex-wrap">
+        <span 
+          class="px-3 py-1 rounded-full text-xs font-medium"
+          [style.background-color]="getCategoryColor(idea.category)"
+          [style.color]="getCategoryTextColor(idea.category)">
+          {{ getCategoryLabel(idea.category) }}
+        </span>
+        <span 
+          class="px-3 py-1 rounded-full text-xs font-medium"
+          [style.background-color]="getStatusColor(idea.status)"
+          [style.color]="getStatusTextColor(idea.status)">
+          {{ getStatusLabel(idea.status) }}
+        </span>
+        <span *ngIf="idea.estimatedBudget" class="text-sm text-gray-600 flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
+          <mat-icon class="text-sm">euro</mat-icon>
+          Budget estimé : {{ idea.estimatedBudget }}€
+        </span>
+      </div>
+      <div class="prose max-w-none">
+        <p class="text-gray-700 whitespace-pre-wrap">{{ idea.description }}</p>
+      </div>
+    </mat-card-content>
+    <mat-card-actions class="flex items-center justify-between px-4 pb-4 border-t pt-4">
+      <div class="flex items-center gap-4">
+        <!-- Vote up -->
+        <button 
+          mat-icon-button 
+          [color]="idea.userVote === 'upvote' ? 'primary' : ''"
+          [disabled]="!authService.isLoggedIn() || voting"
+          (click)="vote(true)"
+          [matTooltip]="authService.isLoggedIn() ? 'Voter pour' : 'Connectez-vous pour voter'">
+          <mat-icon [class.text-primary]="idea.userVote === 'upvote'">thumb_up</mat-icon>
+        </button>
+        <span class="text-lg font-semibold min-w-[3rem] text-center">{{ idea.votes }}</span>
+        <!-- Vote down -->
+        <button 
+          mat-icon-button 
+          [color]="idea.userVote === 'downvote' ? 'warn' : ''"
+          [disabled]="!authService.isLoggedIn() || voting"
+          (click)="vote(false)"
+          [matTooltip]="authService.isLoggedIn() ? 'Voter contre' : 'Connectez-vous pour voter'">
+          <mat-icon [class.text-warn]="idea.userVote === 'downvote'">thumb_down</mat-icon>
+        </button>
+        <span class="text-gray-600 ml-4 flex items-center gap-1">
+          <mat-icon class="text-sm">comment</mat-icon>
+          {{ idea.commentsCount }} commentaire{{ idea.commentsCount > 1 ? 's' : '' }}
+        </span>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Commentaires -->
+  <mat-card class="mt-6">
+    <mat-card-header>
+      <mat-card-title>Commentaires</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <!-- Formulaire de commentaire -->
+      <div *ngIf="authService.isLoggedIn()" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <h3 class="text-lg font-semibold text-dark mb-4 flex items-center gap-2">
+          <mat-icon>comment</mat-icon>
+          Ajouter un commentaire
+        </h3>
+        <form [formGroup]="commentForm" (ngSubmit)="submitComment()" class="space-y-4">
+          <div>
+            <textarea 
+              formControlName="content" 
+              rows="4"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-y"
+              placeholder="Partagez vos pensées sur cette idée..."></textarea>
+            <div *ngIf="commentForm.get('content')?.hasError('required') && commentForm.get('content')?.touched" 
+                 class="text-red-500 text-sm mt-1 flex items-center gap-1">
+              <mat-icon class="text-sm">error</mat-icon>
+              Le commentaire est requis
+            </div>
+            <div *ngIf="commentForm.get('content')?.hasError('minlength') && commentForm.get('content')?.touched" 
+                 class="text-red-500 text-sm mt-1 flex items-center gap-1">
+              <mat-icon class="text-sm">error</mat-icon>
+              Le commentaire doit contenir au moins 3 caractères
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button 
+              mat-raised-button 
+              color="primary" 
+              type="submit"
+              [disabled]="commentForm.invalid || submittingComment"
+              class="flex items-center gap-2">
+              <mat-icon *ngIf="!submittingComment">send</mat-icon>
+              <mat-icon *ngIf="submittingComment" class="animate-spin">refresh</mat-icon>
+              <span>{{ submittingComment ? 'Envoi...' : 'Commenter' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+      <div *ngIf="!authService.isLoggedIn()" class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+        <p class="text-blue-800 mb-2">Connectez-vous pour commenter</p>
+        <a mat-raised-button color="primary" routerLink="/auth/login">
+          <mat-icon>login</mat-icon>
+          <span class="ml-2">Se connecter</span>
+        </a>
+      </div>
+
+      <mat-divider class="mb-6"></mat-divider>
+
+      <!-- Liste des commentaires -->
+      <div *ngIf="comments.length === 0" class="text-center py-8 text-gray-500">
+        <mat-icon class="text-4xl mb-2">comment</mat-icon>
+        <p>Aucun commentaire pour le moment</p>
+        <p class="text-sm">Soyez le premier à commenter !</p>
+      </div>
+
+      <div *ngIf="comments.length > 0" class="space-y-4">
+        <div *ngFor="let comment of comments" class="border border-gray-200 rounded-lg p-4">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="font-semibold text-dark">
+                {{ comment.author.firstName }} {{ comment.author.lastName }}
+              </p>
+              <p class="text-sm text-gray-500">{{ comment.createdAt | dateFormat }}</p>
+            </div>
+            <button 
+              *ngIf="canDeleteComment(comment)"
+              mat-icon-button 
+              color="warn"
+              (click)="deleteComment(comment.id)"
+              class="text-sm">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+          <p class="text-gray-700 whitespace-pre-wrap">{{ comment.content }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<div *ngIf="loading" class="container mx-auto px-4 py-8 text-center">
+  <mat-icon class="text-4xl text-gray-400 animate-spin">refresh</mat-icon>
+  <p class="mt-4 text-gray-600">Chargement de l'idée...</p>
+</div>

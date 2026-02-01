@@ -96,5 +96,12 @@ export class UsersService {
       }, {} as Record<string, number>),
     };
   }
+
+  async findActiveMembersWithNewsletter(): Promise<User[]> {
+    return this.usersRepository.find({
+      where: { isActive: true, consentNewsletter: true },
+      select: ['id', 'firstName', 'lastName', 'email'],
+    });
+  }
 }
 

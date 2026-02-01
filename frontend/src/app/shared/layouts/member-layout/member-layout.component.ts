@@ -91,6 +91,10 @@ import { Router } from '@angular/router';
              class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
             <mat-icon class="mr-2 align-middle text-sm">shopping_bag</mat-icon>Mes commandes
           </a>
+          <a routerLink="/member/my-events" routerLinkActive="text-primary border-b-2 border-primary" 
+             class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
+            <mat-icon class="mr-2 align-middle text-sm">event</mat-icon>Mes événements
+          </a>
           <ng-container *ngIf="(currentUser$ | async)?.role === 'admin'">
             <a routerLink="/admin/dashboard" routerLinkActive="text-primary border-b-2 border-primary" 
                class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
@@ -151,6 +155,11 @@ import { Router } from '@angular/router';
                (click)="mobileMenuOpen = false"
                class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
               <mat-icon class="mr-2 align-middle text-sm">shopping_bag</mat-icon>Mes commandes
+            </a>
+            <a routerLink="/member/my-events" routerLinkActive="text-primary font-semibold" 
+               (click)="mobileMenuOpen = false"
+               class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
+              <mat-icon class="mr-2 align-middle text-sm">event</mat-icon>Mes événements
             </a>
             <ng-container *ngIf="(currentUser$ | async)?.role === 'admin'">
               <a routerLink="/admin/dashboard" routerLinkActive="text-primary font-semibold" 

@@ -84,7 +84,13 @@
 
         <!-- Upcoming Events -->
         <div class="bg-white rounded-xl shadow-lg p-6">
-          <h3 class="text-2xl font-bold text-dark mb-6">Mes Événements</h3>
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-dark">Mes Événements</h3>
+            <button mat-button color="primary" routerLink="/member/my-events" class="flex items-center gap-1">
+              <mat-icon class="text-sm">event</mat-icon>
+              <span>Voir tous mes événements</span>
+            </button>
+          </div>
           <div class="space-y-4">
             <div *ngFor="let event of upcomingEvents$ | async" class="border-l-4 border-primary pl-4">
               <h4 class="font-medium text-dark">{{ event.title }}</h4>

@@ -49,11 +49,65 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Charger les données fraîches depuis le backend
+    this.loadProfile();
+    
+    // Également écouter les changements de currentUser$ pour la réactivité
     this.currentUser$.subscribe(user => {
       if (user) {
-        this.profileForm.patchValue(user);
+        this.profileForm.patchValue({
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          addressStreet: user.addressStreet || '',
+          addressCity: user.addressCity || '',
+          addressPostalCode: user.addressPostalCode || '',
+          consentAnnuaire: user.consentAnnuaire || false,
+          consentNewsletter: user.consentNewsletter || false
+        });
       }
     });
+  }
+
+  loadProfile(): void {
+    this.http.get<User>(`${environment.apiUrl}/users/profile`)
+      .subscribe({
+        next: (user) => {
+          // Mettre à jour le formulaire avec toutes les données
+          this.profileForm.patchValue({
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            email: user.email || '',
+            phone: user.phone || '',
+            addressStreet: user.addressStreet || '',
+            addressCity: user.addressCity || '',
+            addressPostalCode: user.addressPostalCode || '',
+            consentAnnuaire: user.consentAnnuaire || false,
+            consentNewsletter: user.consentNewsletter || false
+          });
+          // Mettre à jour l'utilisateur dans le service d'authentification
+          this.authService.updateCurrentUser(user);
+        },
+        error: (error) => {
+          console.error('Erreur lors du chargement du profil:', error);
+          // En cas d'erreur, utiliser les données locales comme fallback
+          const localUser = this.authService.getCurrentUser();
+          if (localUser) {
+            this.profileForm.patchValue({
+              firstName: localUser.firstName || '',
+              lastName: localUser.lastName || '',
+              email: localUser.email || '',
+              phone: localUser.phone || '',
+              addressStreet: localUser.addressStreet || '',
+              addressCity: localUser.addressCity || '',
+              addressPostalCode: localUser.addressPostalCode || '',
+              consentAnnuaire: localUser.consentAnnuaire || false,
+              consentNewsletter: localUser.consentNewsletter || false
+            });
+          }
+        }
+      });
   }
 
   onSubmit(): void {

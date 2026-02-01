@@ -65,6 +65,10 @@ import { Router } from '@angular/router';
               class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
               <mat-icon class="mr-2 align-middle text-sm">comment</mat-icon>Commentaires
             </a>
+            <a routerLink="/admin/ideas" routerLinkActive="text-primary border-b-2 border-primary" 
+              class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
+              <mat-icon class="mr-2 align-middle text-sm">lightbulb</mat-icon>Idées
+            </a>
             <a routerLink="/admin/gallery" routerLinkActive="text-primary border-b-2 border-primary" 
               class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
               <mat-icon class="mr-2 align-middle text-sm">photo_library</mat-icon>Photothèque
@@ -88,6 +92,14 @@ import { Router } from '@angular/router';
             <a routerLink="/admin/contact-messages" routerLinkActive="text-primary border-b-2 border-primary" 
              class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
             <mat-icon class="mr-2 align-middle text-sm">mail</mat-icon>Messages
+          </a>
+            <a routerLink="/admin/broadcast" routerLinkActive="text-primary border-b-2 border-primary" 
+             class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
+            <mat-icon class="mr-2 align-middle text-sm">campaign</mat-icon>Email général
+          </a>
+            <a routerLink="/admin/accounting/dashboard" routerLinkActive="text-primary border-b-2 border-primary" 
+             class="font-medium whitespace-nowrap pb-2 text-gray-600 hover:text-primary transition-colors">
+            <mat-icon class="mr-2 align-middle text-sm">account_balance</mat-icon>Comptabilité
           </a>
         </nav>
         
@@ -129,6 +141,11 @@ import { Router } from '@angular/router';
                 class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
                 <mat-icon class="mr-2 align-middle text-sm">comment</mat-icon>Commentaires
               </a>
+              <a routerLink="/admin/ideas" routerLinkActive="text-primary font-semibold" 
+                (click)="mobileMenuOpen = false"
+                class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
+                <mat-icon class="mr-2 align-middle text-sm">lightbulb</mat-icon>Idées
+              </a>
               <a routerLink="/admin/gallery" routerLinkActive="text-primary font-semibold" 
                 (click)="mobileMenuOpen = false"
                 class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
@@ -158,6 +175,16 @@ import { Router } from '@angular/router';
                (click)="mobileMenuOpen = false"
                class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
               <mat-icon class="mr-2 align-middle text-sm">mail</mat-icon>Messages
+            </a>
+              <a routerLink="/admin/broadcast" routerLinkActive="text-primary font-semibold"
+               (click)="mobileMenuOpen = false"
+               class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
+              <mat-icon class="mr-2 align-middle text-sm">campaign</mat-icon>Email général
+            </a>
+              <a routerLink="/admin/accounting/dashboard" routerLinkActive="text-primary font-semibold"
+               (click)="mobileMenuOpen = false"
+               class="flex items-center py-2 text-gray-600 hover:text-primary transition-colors">
+              <mat-icon class="mr-2 align-middle text-sm">account_balance</mat-icon>Comptabilité
             </a>
           </nav>
         </div>

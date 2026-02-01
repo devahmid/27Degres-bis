@@ -1,0 +1,46 @@
+td.relative {
+  position: relative;
+}
+
+mat-card-content {
+  overflow: visible !important;
+}
+
+mat-card {
+  overflow: visible !important;
+}
+
+.menu-dropdown {
+  position: fixed !important;
+  z-index: 99999 !important;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  min-width: 200px;
+  max-width: 300px;
+  margin-top: 4px;
+}
+
+.menu-item {
+  transition: background-color 0.2s;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 40px;
+  cursor: pointer;
+  
+  &:hover {
+    border-color: #E94E1B;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #E94E1B;
+    box-shadow: 0 0 0 3px rgba(233, 78, 27, 0.1);
+  }
+}

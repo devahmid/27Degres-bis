@@ -1,0 +1,142 @@
+<div class="max-w-6xl mx-auto px-4">
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold mb-2 text-dark">Mes Événements</h1>
+    <p class="text-gray-600">Gérez vos inscriptions aux événements</p>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-12">
+    <mat-icon class="text-4xl text-gray-400 animate-spin">refresh</mat-icon>
+    <p class="mt-4 text-gray-600">Chargement de vos inscriptions...</p>
+  </div>
+
+  <div *ngIf="!loading && registrations.length === 0" class="text-center py-12">
+    <mat-icon class="text-4xl text-gray-400">event_busy</mat-icon>
+    <p class="mt-4 text-gray-600 text-lg">Vous n'êtes inscrit à aucun événement</p>
+    <p class="text-sm text-gray-500 mt-2">Consultez la liste des événements pour vous inscrire</p>
+    <button mat-raised-button color="primary" routerLink="/events" class="mt-4">
+      <mat-icon>event</mat-icon>
+      <span class="ml-2">Voir les événements</span>
+    </button>
+  </div>
+
+  <div *ngIf="!loading && registrations.length > 0" class="space-y-6">
+    <!-- Événements à venir -->
+    <div *ngIf="upcomingRegistrations.length > 0">
+      <h2 class="text-2xl font-bold text-dark mb-4 flex items-center gap-2">
+        <mat-icon class="text-primary">event</mat-icon>
+        Événements à venir
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <mat-card *ngFor="let registration of upcomingRegistrations" 
+                  class="hover:shadow-xl transition-all duration-300 border border-gray-200">
+          <div *ngIf="registration.event.featuredImage" class="relative h-48 overflow-hidden">
+            <img [src]="registration.event.featuredImage" 
+                 [alt]="registration.event.title"
+                 class="w-full h-full object-cover">
+            <div class="absolute top-4 right-4">
+              <span class="px-3 py-1 bg-white rounded-full text-xs font-medium text-primary">
+                Inscrit
+              </span>
+            </div>
+          </div>
+          <mat-card-header>
+            <mat-card-title class="text-xl mb-2">{{ registration.event.title }}</mat-card-title>
+            <mat-card-subtitle class="flex items-center gap-4 flex-wrap">
+              <span class="flex items-center gap-1 text-sm">
+                <mat-icon class="text-sm">schedule</mat-icon>
+                {{ registration.event.startDate | dateFormat }}
+              </span>
+              <span *ngIf="registration.event.location" class="flex items-center gap-1 text-sm">
+                <mat-icon class="text-sm">location_on</mat-icon>
+                {{ registration.event.location }}
+              </span>
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="space-y-3 mb-4">
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-sm font-semibold text-gray-700 mb-1">Disponibilité</p>
+                <p class="text-sm text-gray-600">{{ getAvailabilityLabel(registration) }}</p>
+              </div>
+              <div *ngIf="registration.isVolunteer" class="bg-blue-50 rounded-lg p-3">
+                <p class="text-sm font-semibold text-blue-700 mb-1">Volontariat</p>
+                <p class="text-sm text-blue-600">{{ getVolunteerActivitiesLabel(registration) }}</p>
+              </div>
+              <div *ngIf="registration.notes" class="bg-yellow-50 rounded-lg p-3">
+                <p class="text-sm font-semibold text-yellow-700 mb-1">Notes</p>
+                <p class="text-sm text-yellow-600">{{ registration.notes }}</p>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500">
+              Inscrit le {{ registration.registeredAt | dateFormat }}
+            </p>
+          </mat-card-content>
+          <mat-card-actions class="flex justify-between px-4 pb-4">
+            <button mat-button color="primary" [routerLink]="['/events', registration.eventId]">
+              <mat-icon>visibility</mat-icon>
+              <span class="ml-1">Voir l'événement</span>
+            </button>
+            <div class="flex gap-2">
+              <button mat-icon-button color="primary" (click)="editRegistration(registration)" 
+                      [matTooltip]="'Modifier mes options'">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="unregister(registration.eventId, registration.event.title)"
+                      [matTooltip]="'Se désinscrire'">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </div>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Événements passés -->
+    <div *ngIf="pastRegistrations.length > 0" class="mt-8">
+      <h2 class="text-2xl font-bold text-dark mb-4 flex items-center gap-2">
+        <mat-icon class="text-gray-500">history</mat-icon>
+        Événements passés
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <mat-card *ngFor="let registration of pastRegistrations" 
+                  class="opacity-75 hover:opacity-100 transition-all duration-300 border border-gray-200">
+          <div *ngIf="registration.event.featuredImage" class="relative h-48 overflow-hidden">
+            <img [src]="registration.event.featuredImage" 
+                 [alt]="registration.event.title"
+                 class="w-full h-full object-cover grayscale">
+          </div>
+          <mat-card-header>
+            <mat-card-title class="text-xl mb-2">{{ registration.event.title }}</mat-card-title>
+            <mat-card-subtitle class="flex items-center gap-4 flex-wrap">
+              <span class="flex items-center gap-1 text-sm">
+                <mat-icon class="text-sm">schedule</mat-icon>
+                {{ registration.event.startDate | dateFormat }}
+              </span>
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="space-y-2 mb-4">
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-sm font-semibold text-gray-700 mb-1">Disponibilité</p>
+                <p class="text-sm text-gray-600">{{ getAvailabilityLabel(registration) }}</p>
+              </div>
+              <div *ngIf="registration.isVolunteer" class="bg-blue-50 rounded-lg p-3">
+                <p class="text-sm font-semibold text-blue-700 mb-1">Volontariat</p>
+                <p class="text-sm text-blue-600">{{ getVolunteerActivitiesLabel(registration) }}</p>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500">
+              Inscrit le {{ registration.registeredAt | dateFormat }}
+            </p>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-button color="primary" [routerLink]="['/events', registration.eventId]">
+              <mat-icon>visibility</mat-icon>
+              <span class="ml-1">Voir l'événement</span>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

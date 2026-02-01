@@ -64,9 +64,20 @@ export class CotisationsController {
   @Roles('admin')
   updateStatus(
     @Param('id') id: string,
-    @Body() body: { status: 'paid' | 'pending' | 'overdue'; transactionId?: string }
+    @Body() body: { 
+      status: 'paid' | 'pending' | 'overdue'; 
+      transactionId?: string;
+      paymentMethod?: string;
+      receiptUrl?: string;
+    }
   ) {
-    return this.cotisationsService.updateStatus(+id, body.status, body.transactionId);
+    return this.cotisationsService.updateStatus(
+      +id, 
+      body.status, 
+      body.transactionId,
+      body.paymentMethod,
+      body.receiptUrl
+    );
   }
 
   @Delete('admin/:id')

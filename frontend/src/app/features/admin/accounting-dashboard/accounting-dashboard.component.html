@@ -1,0 +1,236 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-4xl font-bold mb-2 text-dark flex items-center gap-3">
+        <mat-icon class="text-primary text-5xl">account_balance</mat-icon>
+        Vue Comptable
+      </h1>
+      <p class="text-gray-600 text-lg">Bilan financier de l'association par année</p>
+    </div>
+    <div class="flex flex-col md:flex-row gap-4 items-end">
+      <div>
+        <label class="block text-dark font-medium mb-2">Année</label>
+        <select 
+          [(ngModel)]="selectedYear" 
+          (ngModelChange)="onYearChange()"
+          class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white">
+          <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+        </select>
+      </div>
+      <div class="flex gap-2">
+        <button 
+          mat-stroked-button
+          (click)="exportExcel()"
+          class="flex items-center gap-2">
+          <mat-icon>file_download</mat-icon>
+          Excel
+        </button>
+        <button 
+          mat-stroked-button
+          (click)="exportPdf()"
+          class="flex items-center gap-2">
+          <mat-icon>picture_as_pdf</mat-icon>
+          PDF
+        </button>
+        <a 
+          routerLink="/admin/accounting/expenses"
+          mat-raised-button 
+          color="primary"
+          class="flex items-center gap-2">
+          <mat-icon>add</mat-icon>
+          Gérer les dépenses
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-12">
+    <mat-icon class="animate-spin text-4xl text-gray-400">refresh</mat-icon>
+    <p class="text-gray-500 mt-4">Chargement des données...</p>
+  </div>
+
+  <div *ngIf="!loading && summary" class="space-y-6">
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Recettes -->
+      <mat-card class="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg">
+        <mat-card-content class="p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-green-100 text-sm mb-1">Total Recettes</p>
+              <p class="text-3xl font-bold">{{ formatAmount(summary.totalRevenue) }}</p>
+              <p class="text-green-100 text-sm mt-2">
+                {{ summary.cotisationsCount }} cotisation(s) payée(s)
+              </p>
+            </div>
+            <mat-icon class="text-5xl opacity-50">trending_up</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Dépenses -->
+      <mat-card class="bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg">
+        <mat-card-content class="p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-red-100 text-sm mb-1">Total Dépenses</p>
+              <p class="text-3xl font-bold">{{ formatAmount(summary.totalExpenses) }}</p>
+              <p class="text-red-100 text-sm mt-2">
+                {{ summary.expensesCount }} dépense(s)
+              </p>
+            </div>
+            <mat-icon class="text-5xl opacity-50">trending_down</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Solde -->
+      <mat-card [class]="'bg-gradient-to-br shadow-lg ' + (summary.balance >= 0 ? 'from-blue-500 to-blue-600' : 'from-orange-500 to-orange-600') + ' text-white'">
+        <mat-card-content class="p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-white/90 text-sm mb-1">Solde</p>
+              <p class="text-3xl font-bold">{{ formatAmount(summary.balance) }}</p>
+              <p class="text-white/90 text-sm mt-2 flex items-center gap-1">
+                <mat-icon class="text-sm">{{ summary.balance >= 0 ? 'check_circle' : 'warning' }}</mat-icon>
+                {{ summary.balance >= 0 ? 'Positif' : 'Négatif' }}
+              </p>
+            </div>
+            <mat-icon class="text-5xl opacity-50">account_balance_wallet</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Détails par catégorie -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title class="text-xl font-bold text-dark flex items-center gap-2">
+          <mat-icon class="text-primary">pie_chart</mat-icon>
+          Répartition des dépenses par catégorie
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-6">
+        <div *ngIf="getCategoryEntries().length === 0" class="text-center py-8 text-gray-500">
+          <mat-icon class="text-6xl text-gray-300 mb-4">bar_chart</mat-icon>
+          <p>Aucune dépense enregistrée pour cette année</p>
+        </div>
+        
+        <div *ngIf="getCategoryEntries().length > 0" class="space-y-4">
+          <div *ngFor="let entry of getCategoryEntries()" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full" [style.background-color]="getCategoryColor(entry.category)"></div>
+              <span class="font-medium text-dark">{{ entry.label }}</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-gray-600 text-sm">
+                {{ getCategoryPercentage(entry.amount) }}% du total
+              </span>
+              <span class="font-bold text-red-600 text-lg">{{ formatAmount(entry.amount) }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Graphique visuel simple -->
+    <mat-card *ngIf="getCategoryEntries().length > 0">
+      <mat-card-header>
+        <mat-card-title class="text-xl font-bold text-dark flex items-center gap-2">
+          <mat-icon class="text-primary">show_chart</mat-icon>
+          Visualisation
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-6">
+        <div class="space-y-3">
+          <div *ngFor="let entry of getCategoryEntries()" class="flex items-center gap-4">
+            <div class="w-32 text-sm text-gray-700 font-medium">{{ entry.label }}</div>
+            <div class="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
+              <div 
+                class="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+                [style.width.%]="getCategoryPercentage(entry.amount)"
+                [style.background-color]="getCategoryColor(entry.category)">
+                <span class="text-white text-xs font-medium" *ngIf="getCategoryPercentage(entry.amount) > 10">
+                  {{ getCategoryPercentage(entry.amount).toFixed(0) }}%
+                </span>
+              </div>
+            </div>
+            <div class="w-24 text-right font-semibold text-red-600">{{ formatAmount(entry.amount) }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Comparaison entre années -->
+    <mat-card *ngIf="compareYear">
+      <mat-card-header>
+        <div class="flex items-center justify-between w-full">
+          <mat-card-title class="text-xl font-bold text-dark flex items-center gap-2">
+            <mat-icon class="text-primary">compare_arrows</mat-icon>
+            Comparaison avec {{ compareYear }}
+          </mat-card-title>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-600">Comparer avec:</label>
+            <select 
+              [(ngModel)]="compareYear" 
+              (ngModelChange)="onCompareYearChange()"
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white text-sm">
+              <option *ngFor="let year of availableYears" [value]="year" [disabled]="year === selectedYear">{{ year }}</option>
+            </select>
+          </div>
+        </div>
+      </mat-card-header>
+      <mat-card-content class="p-6">
+        <div *ngIf="loadingComparison" class="text-center py-8">
+          <mat-icon class="animate-spin text-2xl text-gray-400">refresh</mat-icon>
+          <p class="text-gray-500 mt-2 text-sm">Chargement de la comparaison...</p>
+        </div>
+        
+        <div *ngIf="!loadingComparison && comparison" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Recettes -->
+            <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+              <p class="text-sm text-gray-600 mb-1">Recettes</p>
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-semibold">{{ formatAmount(comparison.year2.totalRevenue) }}</span>
+                <span [class]="comparison.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium flex items-center gap-1">
+                  <mat-icon class="text-sm">{{ comparison.revenueChange >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                  {{ comparison.revenueChange >= 0 ? '+' : '' }}{{ formatAmount(comparison.revenueChange) }}
+                  ({{ comparison.revenueChangePercent >= 0 ? '+' : '' }}{{ comparison.revenueChangePercent.toFixed(1) }}%)
+                </span>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">vs {{ comparison.year1.totalRevenue.toFixed(2) }} € en {{ comparison.year1.year }}</p>
+            </div>
+
+            <!-- Dépenses -->
+            <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+              <p class="text-sm text-gray-600 mb-1">Dépenses</p>
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-semibold">{{ formatAmount(comparison.year2.totalExpenses) }}</span>
+                <span [class]="comparison.expensesChange <= 0 ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium flex items-center gap-1">
+                  <mat-icon class="text-sm">{{ comparison.expensesChange <= 0 ? 'trending_down' : 'trending_up' }}</mat-icon>
+                  {{ comparison.expensesChange >= 0 ? '+' : '' }}{{ formatAmount(comparison.expensesChange) }}
+                  ({{ comparison.expensesChangePercent >= 0 ? '+' : '' }}{{ comparison.expensesChangePercent.toFixed(1) }}%)
+                </span>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">vs {{ comparison.year1.totalExpenses.toFixed(2) }} € en {{ comparison.year1.year }}</p>
+            </div>
+
+            <!-- Solde -->
+            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p class="text-sm text-gray-600 mb-1">Solde</p>
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-semibold">{{ formatAmount(comparison.year2.balance) }}</span>
+                <span [class]="comparison.balanceChange >= 0 ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium flex items-center gap-1">
+                  <mat-icon class="text-sm">{{ comparison.balanceChange >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                  {{ comparison.balanceChange >= 0 ? '+' : '' }}{{ formatAmount(comparison.balanceChange) }}
+                </span>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">vs {{ formatAmount(comparison.year1.balance) }} en {{ comparison.year1.year }}</p>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

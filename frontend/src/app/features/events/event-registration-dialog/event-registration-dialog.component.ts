@@ -29,7 +29,10 @@ import { NotificationService } from '../../../core/services/notification.service
     <div class="p-6 max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
       <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
         <div>
-          <h2 class="text-2xl font-bold text-dark mb-2">Inscription à l'événement</h2>
+          <h2 class="text-2xl font-bold text-dark mb-2">
+            <span *ngIf="!isEditMode">Inscription à l'événement</span>
+            <span *ngIf="isEditMode">Modifier mon inscription</span>
+          </h2>
           <p class="text-gray-600 text-lg">{{ data.title }}</p>
         </div>
         <button mat-icon-button (click)="onCancel()" class="text-gray-500 hover:text-gray-700">
@@ -169,8 +172,10 @@ import { NotificationService } from '../../../core/services/notification.service
             class="px-8 flex items-center gap-2">
             <mat-icon *ngIf="!isSubmitting">event_available</mat-icon>
             <mat-icon *ngIf="isSubmitting" class="animate-spin">refresh</mat-icon>
-            <span *ngIf="!isSubmitting">Confirmer l'inscription</span>
-            <span *ngIf="isSubmitting">Inscription en cours...</span>
+            <span *ngIf="!isSubmitting && !isEditMode">Confirmer l'inscription</span>
+            <span *ngIf="!isSubmitting && isEditMode">Enregistrer les modifications</span>
+            <span *ngIf="isSubmitting && !isEditMode">Inscription en cours...</span>
+            <span *ngIf="isSubmitting && isEditMode">Modification en cours...</span>
           </button>
         </div>
       </form>
@@ -221,6 +226,8 @@ import { NotificationService } from '../../../core/services/notification.service
 export class EventRegistrationDialogComponent implements OnInit {
   registrationForm: FormGroup;
   isSubmitting = false;
+  isEditMode = false;
+  registrationId?: number;
 
   constructor(
     private fb: FormBuilder,
@@ -286,17 +293,33 @@ export class EventRegistrationDialogComponent implements OnInit {
         notes: formValue.notes || null
       };
 
-      this.eventsService.registerToEvent(this.data.id, registrationData).subscribe({
-        next: () => {
-          this.notification.showSuccess('Inscription réussie ! Merci pour votre participation.');
-          this.dialogRef.close(true);
-        },
-        error: (error) => {
-          const errorMessage = error.error?.message || 'Erreur lors de l\'inscription';
-          this.notification.showError(errorMessage);
-          this.isSubmitting = false;
-        }
-      });
+      if (this.isEditMode && this.registrationId) {
+        // Mode édition : mettre à jour l'inscription existante
+        this.eventsService.updateRegistration(this.registrationId, registrationData).subscribe({
+          next: () => {
+            this.notification.showSuccess('Inscription modifiée avec succès !');
+            this.dialogRef.close(true);
+          },
+          error: (error) => {
+            const errorMessage = error.error?.message || 'Erreur lors de la modification de l\'inscription';
+            this.notification.showError(errorMessage);
+            this.isSubmitting = false;
+          }
+        });
+      } else {
+        // Mode création : créer une nouvelle inscription
+        this.eventsService.registerToEvent(this.data.id, registrationData).subscribe({
+          next: () => {
+            this.notification.showSuccess('Inscription réussie ! Merci pour votre participation.');
+            this.dialogRef.close(true);
+          },
+          error: (error) => {
+            const errorMessage = error.error?.message || 'Erreur lors de l\'inscription';
+            this.notification.showError(errorMessage);
+            this.isSubmitting = false;
+          }
+        });
+      }
     }
   }
 

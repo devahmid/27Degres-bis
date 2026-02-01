@@ -32,8 +32,11 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
-    return this.usersService.findOne(req.user.id);
+  async getProfile(@Request() req) {
+    const user = await this.usersService.findOne(req.user.id);
+    // Exclure les champs sensibles
+    const { password, passwordResetToken, passwordResetExpires, ...userWithoutSensitiveData } = user;
+    return userWithoutSensitiveData;
   }
 
   @UseGuards(JwtAuthGuard)

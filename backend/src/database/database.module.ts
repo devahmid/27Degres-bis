@@ -17,6 +17,10 @@ import { Product } from '../products/entities/product.entity';
 import { Order } from '../orders/entities/order.entity';
 import { OrderItem } from '../orders/entities/order-item.entity';
 import { DeliveryMethod } from '../orders/entities/delivery-method.entity';
+import { Idea } from '../ideas/entities/idea.entity';
+import { IdeaVote } from '../ideas/entities/idea-vote.entity';
+import { IdeaComment } from '../ideas/entities/idea-comment.entity';
+import { Expense } from '../accounting/entities/expense.entity';
 
 @Module({
   imports: [
@@ -46,6 +50,10 @@ import { DeliveryMethod } from '../orders/entities/delivery-method.entity';
               Order,
               OrderItem,
               DeliveryMethod,
+              Idea,
+              IdeaVote,
+              IdeaComment,
+              Expense,
             ],
             synchronize: configService.get('NODE_ENV') !== 'production',
             logging: configService.get('NODE_ENV') === 'development',
@@ -78,6 +86,9 @@ import { DeliveryMethod } from '../orders/entities/delivery-method.entity';
               Order,
               OrderItem,
               DeliveryMethod,
+              Idea,
+              IdeaVote,
+              IdeaComment,
           ],
           synchronize: configService.get('NODE_ENV') !== 'production',
           logging: configService.get('NODE_ENV') === 'development',

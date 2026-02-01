@@ -66,6 +66,12 @@ export class EventsController {
     return this.eventsService.getAllImages();
   }
 
+  @Get('my-registrations')
+  @UseGuards(JwtAuthGuard)
+  getMyRegistrations(@Request() req) {
+    return this.eventsService.getUserRegistrations(req.user.id);
+  }
+
   @Delete('images/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'bureau')
@@ -142,6 +148,16 @@ export class EventsController {
   @UseGuards(JwtAuthGuard)
   getPublicRegistrations(@Param('id', ParseIntPipe) id: number) {
     return this.eventsService.getPublicEventRegistrations(id);
+  }
+
+  @Patch('registrations/:registrationId')
+  @UseGuards(JwtAuthGuard)
+  updateRegistration(
+    @Param('registrationId', ParseIntPipe) registrationId: number,
+    @Request() req,
+    @Body() updateDto: RegisterEventDto
+  ) {
+    return this.eventsService.updateRegistration(registrationId, req.user.id, updateDto);
   }
 
   @Delete(':id')

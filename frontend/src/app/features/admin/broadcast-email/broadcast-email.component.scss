@@ -1,0 +1,29 @@
+mat-card {
+  border-radius: 12px;
+}
+
+mat-chip {
+  cursor: default;
+  
+  mat-icon {
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

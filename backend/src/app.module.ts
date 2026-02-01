@@ -16,6 +16,9 @@ import { GalleryModule } from './gallery/gallery.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { MailModule } from './mail/mail.module';
+import { IdeasModule } from './ideas/ideas.module';
+import { BroadcastModule } from './broadcast/broadcast.module';
+import { AccountingModule } from './accounting/accounting.module';
 
 @Module({
   imports: [
@@ -35,6 +38,9 @@ import { MailModule } from './mail/mail.module';
     ProductsModule,
     OrdersModule,
     MailModule,
+    IdeasModule,
+    BroadcastModule,
+    AccountingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

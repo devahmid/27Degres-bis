@@ -61,6 +61,29 @@ export const routes: Routes = [
     loadComponent: () => import('./features/gallery/public-gallery.component').then(m => m.PublicGalleryComponent)
   },
   {
+    path: 'ideas',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/ideas/idea-list/idea-list.component').then(m => m.IdeaListComponent)
+      },
+      {
+        path: 'new',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/ideas/idea-form/idea-form.component').then(m => m.IdeaFormComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./features/ideas/idea-detail/idea-detail.component').then(m => m.IdeaDetailComponent)
+      },
+      {
+        path: ':id/edit',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/ideas/idea-form/idea-form.component').then(m => m.IdeaFormComponent)
+      }
+    ]
+  },
+  {
     path: 'shop',
     children: [
       {
@@ -114,6 +137,10 @@ export const routes: Routes = [
       {
         path: 'orders',
         loadComponent: () => import('./features/member/my-orders/my-orders.component').then(m => m.MyOrdersComponent)
+      },
+      {
+        path: 'my-events',
+        loadComponent: () => import('./features/member/my-events/my-events.component').then(m => m.MyEventsComponent)
       },
       {
         path: '',
@@ -175,6 +202,32 @@ export const routes: Routes = [
       {
         path: 'contact-messages',
         loadComponent: () => import('./features/admin/contact-messages-management/contact-messages-management.component').then(m => m.ContactMessagesManagementComponent)
+      },
+      {
+        path: 'ideas',
+        loadComponent: () => import('./features/admin/ideas-management/ideas-management.component').then(m => m.IdeasManagementComponent)
+      },
+      {
+        path: 'broadcast',
+        loadComponent: () => import('./features/admin/broadcast-email/broadcast-email.component').then(m => m.BroadcastEmailComponent)
+      },
+      {
+        path: 'accounting',
+        children: [
+          {
+            path: '',
+            redirectTo: 'dashboard',
+            pathMatch: 'full'
+          },
+          {
+            path: 'dashboard',
+            loadComponent: () => import('./features/admin/accounting-dashboard/accounting-dashboard.component').then(m => m.AccountingDashboardComponent)
+          },
+          {
+            path: 'expenses',
+            loadComponent: () => import('./features/admin/expenses-management/expenses-management.component').then(m => m.ExpensesManagementComponent)
+          }
+        ]
       },
       {
         path: '',
