@@ -41,8 +41,8 @@ export class CotisationsController {
   @Get('admin/statistics')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  getStatistics() {
-    return this.cotisationsService.getStatistics();
+  getStatistics(@Query('year') year?: number) {
+    return this.cotisationsService.getStatistics(year);
   }
 
   @Get('admin/:id')

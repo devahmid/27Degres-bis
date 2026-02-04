@@ -114,21 +114,23 @@ export class CotisationsService {
     await this.cotisationsRepository.delete(id);
   }
 
-  async getStatistics() {
-    const currentYear = new Date().getFullYear();
+  async getStatistics(year?: number) {
+    const currentYear = year || new Date().getFullYear();
     const all = await this.cotisationsRepository.find();
-    const currentYearCotisations = await this.cotisationsRepository.find({
+    
+    // Si une année est spécifiée, filtrer par cette année, sinon utiliser l'année en cours
+    const filteredCotisations = await this.cotisationsRepository.find({
       where: { year: currentYear },
     });
 
     return {
       total: all.length,
-      currentYear: currentYearCotisations.length,
-      paid: currentYearCotisations.filter(c => c.status === 'paid').length,
-      pending: currentYearCotisations.filter(c => c.status === 'pending').length,
-      overdue: currentYearCotisations.filter(c => c.status === 'overdue').length,
-      totalAmount: currentYearCotisations.reduce((sum, c) => sum + Number(c.amount), 0),
-      paidAmount: currentYearCotisations
+      currentYear: filteredCotisations.length,
+      paid: filteredCotisations.filter(c => c.status === 'paid').length,
+      pending: filteredCotisations.filter(c => c.status === 'pending').length,
+      overdue: filteredCotisations.filter(c => c.status === 'overdue').length,
+      totalAmount: filteredCotisations.reduce((sum, c) => sum + Number(c.amount), 0),
+      paidAmount: filteredCotisations
         .filter(c => c.status === 'paid')
         .reduce((sum, c) => sum + Number(c.amount), 0),
     };

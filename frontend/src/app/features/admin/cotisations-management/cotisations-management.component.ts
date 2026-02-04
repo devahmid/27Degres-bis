@@ -63,7 +63,7 @@ interface CotisationWithUser extends Cotisation {
               <label class="block text-dark font-medium mb-2">Année</label>
               <select 
                 [(ngModel)]="filterYear" 
-                (ngModelChange)="onFilterChange()"
+                (ngModelChange)="onYearFilterChange()"
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white">
                 <option value="">Toutes</option>
                 <option [value]="currentYear">{{ currentYear }}</option>
@@ -75,7 +75,7 @@ interface CotisationWithUser extends Cotisation {
               <label class="block text-dark font-medium mb-2">Statut</label>
               <select 
                 [(ngModel)]="filterStatus" 
-                (ngModelChange)="onFilterChange()"
+                (ngModelChange)="onOtherFilterChange()"
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white">
                 <option value="">Tous</option>
                 <option value="paid">Payées</option>
@@ -90,7 +90,7 @@ interface CotisationWithUser extends Cotisation {
                 <input 
                   type="text" 
                   [(ngModel)]="searchTerm" 
-                  (ngModelChange)="onFilterChange()" 
+                  (ngModelChange)="onOtherFilterChange()" 
                   placeholder="Nom, email..."
                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
               </div>
@@ -206,39 +206,47 @@ export class CotisationsManagementComponent implements OnInit {
   }
 
   loadCotisations(): void {
-    const url = this.filterYear 
+    const url = this.filterYear && this.filterYear !== '' 
       ? `${environment.apiUrl}/cotisations/admin/all?year=${this.filterYear}`
       : `${environment.apiUrl}/cotisations/admin/all`;
     
     this.cotisations$ = this.http.get<CotisationWithUser[]>(url);
-    this.filteredCotisations$ = this.cotisations$;
+    this.applyFilters();
   }
 
-  onFilterChange(): void {
-    if (this.filterYear) {
-      this.loadCotisations();
-    } else {
-      this.filteredCotisations$ = this.cotisations$.pipe(
-        map(cotisations => {
-          let filtered = [...cotisations];
-          
-          if (this.searchTerm) {
-            const term = this.searchTerm.toLowerCase();
-            filtered = filtered.filter(c => 
-              c.user?.firstName.toLowerCase().includes(term) ||
-              c.user?.lastName.toLowerCase().includes(term) ||
-              c.user?.email.toLowerCase().includes(term)
-            );
-          }
-          
-          if (this.filterStatus) {
-            filtered = filtered.filter(c => c.status === this.filterStatus);
-          }
-          
-          return filtered;
-        })
-      );
-    }
+  applyFilters(): void {
+    this.filteredCotisations$ = this.cotisations$.pipe(
+      map(cotisations => {
+        let filtered = [...cotisations];
+        
+        if (this.searchTerm) {
+          const term = this.searchTerm.toLowerCase();
+          filtered = filtered.filter(c => 
+            c.user?.firstName.toLowerCase().includes(term) ||
+            c.user?.lastName.toLowerCase().includes(term) ||
+            c.user?.email.toLowerCase().includes(term)
+          );
+        }
+        
+        if (this.filterStatus) {
+          filtered = filtered.filter(c => c.status === this.filterStatus);
+        }
+        
+        return filtered;
+      })
+    );
+  }
+
+  onYearFilterChange(): void {
+    // Quand on change le filtre année (y compris quand on revient à "Toutes"),
+    // il faut recharger les cotisations depuis le serveur
+    this.loadCotisations();
+  }
+
+  onOtherFilterChange(): void {
+    // Pour les autres filtres (recherche, statut), on applique juste les filtres
+    // sur les données déjà chargées sans recharger depuis le serveur
+    this.applyFilters();
   }
 
   updateStatus(cotisation: CotisationWithUser, status: 'paid' | 'pending' | 'overdue'): void {
