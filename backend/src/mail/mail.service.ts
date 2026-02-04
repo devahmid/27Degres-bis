@@ -14,6 +14,7 @@ export class MailService {
     await this.mailerService.sendMail({
       to: process.env.CONTACT_EMAIL || process.env.SMTP_USER,
       subject: `[Contact] ${contactData.subject}`,
+      replyTo: contactData.email, // Permet de répondre directement à l'expéditeur
       template: 'contact',
       context: {
         name: contactData.name,
@@ -32,51 +33,85 @@ export class MailService {
   }
 
   async sendPasswordResetEmail(email: string, resetToken: string, resetUrl: string): Promise<void> {
+    const frontendUrl = process.env.FRONTEND_URL || 'https://27degres-basseville.fr';
+    
     await this.mailerService.sendMail({
       to: email,
       subject: 'Réinitialisation de votre mot de passe - Association 27 Degrés',
       html: `
-        <h2>Réinitialisation de mot de passe</h2>
-        <p>Vous avez demandé à réinitialiser votre mot de passe.</p>
-        <p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>
-        <p><a href="${resetUrl}?token=${resetToken}" style="background-color: #E94E1B; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Réinitialiser mon mot de passe</a></p>
-        <p>Ou copiez ce lien dans votre navigateur :</p>
-        <p>${resetUrl}?token=${resetToken}</p>
-        <p>Ce lien est valide pendant 1 heure.</p>
-        <p>Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
-        <hr>
-        <p><small>Association 27 Degrés</small></p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #E94E1B;">Réinitialisation de mot de passe</h2>
+          <p>Vous avez demandé à réinitialiser votre mot de passe.</p>
+          <p>Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe :</p>
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}?token=${resetToken}" style="background-color: #E94E1B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Réinitialiser mon mot de passe</a>
+          </p>
+          <p style="color: #666; font-size: 12px;">Ou copiez ce lien dans votre navigateur :</p>
+          <p style="color: #999; font-size: 11px; word-break: break-all;">${resetUrl}?token=${resetToken}</p>
+          <p style="color: #666; font-size: 12px;"><strong>Ce lien est valide pendant 1 heure.</strong></p>
+          <p style="color: #999; font-size: 11px;">Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="color: #666; font-size: 12px;">
+            Association 27 Degrés - Basse-Ville Génération<br>
+            <a href="${frontendUrl}" style="color: #E94E1B;">${frontendUrl}</a>
+          </p>
+        </div>
       `,
+      headers: {
+        'X-Auto-Response-Suppress': 'All',
+      },
     });
   }
 
   async sendWelcomeEmail(email: string, firstName: string): Promise<void> {
+    const frontendUrl = process.env.FRONTEND_URL || 'https://27degres-basseville.fr';
+    
     await this.mailerService.sendMail({
       to: email,
       subject: 'Bienvenue à l\'Association 27 Degrés',
       html: `
-        <h2>Bienvenue ${firstName} !</h2>
-        <p>Votre compte a été créé avec succès sur le site de l'Association 27 Degrés.</p>
-        <p>Vous pouvez maintenant vous connecter et accéder à tous les services de l'association.</p>
-        <p>À bientôt !</p>
-        <hr>
-        <p><small>Association 27 Degrés</small></p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #E94E1B;">Bienvenue ${firstName} !</h2>
+          <p>Votre compte a été créé avec succès sur le site de l'Association 27 Degrés.</p>
+          <p>Vous pouvez maintenant vous connecter et accéder à tous les services de l'association.</p>
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="${frontendUrl}/auth/login" style="background-color: #E94E1B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Se connecter</a>
+          </p>
+          <p>À bientôt !</p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="color: #666; font-size: 12px;">
+            Association 27 Degrés - Basse-Ville Génération<br>
+            <a href="${frontendUrl}" style="color: #E94E1B;">${frontendUrl}</a>
+          </p>
+        </div>
       `,
     });
   }
 
   async sendOrderConfirmationEmail(email: string, orderId: number, orderTotal: number): Promise<void> {
+    const frontendUrl = process.env.FRONTEND_URL || 'https://27degres-basseville.fr';
+    
     await this.mailerService.sendMail({
       to: email,
       subject: `Confirmation de commande #${orderId} - Association 27 Degrés`,
       html: `
-        <h2>Confirmation de commande</h2>
-        <p>Votre commande #${orderId} a été enregistrée avec succès.</p>
-        <p><strong>Montant total:</strong> ${orderTotal.toFixed(2)} €</p>
-        <p>Vous recevrez un email de suivi lorsque votre commande sera expédiée.</p>
-        <p>Merci pour votre achat !</p>
-        <hr>
-        <p><small>Association 27 Degrés</small></p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #E94E1B;">Confirmation de commande</h2>
+          <p>Votre commande <strong>#${orderId}</strong> a été enregistrée avec succès.</p>
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p><strong>Montant total:</strong> ${orderTotal.toFixed(2)} €</p>
+          </div>
+          <p>Vous recevrez un email de suivi lorsque votre commande sera expédiée.</p>
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="${frontendUrl}/member/orders" style="background-color: #E94E1B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Voir mes commandes</a>
+          </p>
+          <p>Merci pour votre achat !</p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="color: #666; font-size: 12px;">
+            Association 27 Degrés - Basse-Ville Génération<br>
+            <a href="${frontendUrl}" style="color: #E94E1B;">${frontendUrl}</a>
+          </p>
+        </div>
       `,
     });
   }
@@ -86,12 +121,24 @@ export class MailService {
       to: email,
       subject: subject,
       html: `
-        <h2>${subject}</h2>
-        ${fromName ? `<p><strong>De:</strong> ${fromName}</p>` : ''}
-        <p>${message.replace(/\n/g, '<br>')}</p>
-        <hr>
-        <p><small>Association 27 Degrés</small></p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #E94E1B;">${subject}</h2>
+          ${fromName ? `<p><strong>De:</strong> ${fromName}</p>` : ''}
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            ${message.replace(/\n/g, '<br>')}
+          </div>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="color: #666; font-size: 12px;">
+            Association 27 Degrés - Basse-Ville Génération<br>
+            <a href="${process.env.FRONTEND_URL || 'https://27degres-basseville.fr'}" style="color: #E94E1B;">${process.env.FRONTEND_URL || 'https://27degres-basseville.fr'}</a>
+          </p>
+        </div>
       `,
+      // Headers supplémentaires pour éviter les spams
+      headers: {
+        'Precedence': 'bulk',
+        'X-Auto-Response-Suppress': 'All',
+      },
     });
   }
 
@@ -254,6 +301,9 @@ export class MailService {
     subject: string,
     message: string
   ): Promise<void> {
+    const frontendUrl = process.env.FRONTEND_URL || 'https://27degres-basseville.fr';
+    const unsubscribeUrl = `${frontendUrl}/member/profile`;
+    
     await this.mailerService.sendMail({
       to: email,
       subject: subject,
@@ -265,9 +315,22 @@ export class MailService {
             ${message.replace(/\n/g, '<br>')}
           </div>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
-          <p style="color: #666; font-size: 12px;">Association 27 Degrés - Basse-Ville Génération</p>
+          <p style="color: #666; font-size: 12px;">
+            Association 27 Degrés - Basse-Ville Génération<br>
+            <a href="${frontendUrl}" style="color: #E94E1B;">${frontendUrl}</a>
+          </p>
+          <p style="color: #999; font-size: 11px; margin-top: 20px;">
+            Vous recevez cet email car vous êtes membre de l'Association 27 Degrés.<br>
+            <a href="${unsubscribeUrl}" style="color: #999;">Gérer mes préférences email</a>
+          </p>
         </div>
       `,
+      // Headers pour emails en masse
+      headers: {
+        'Precedence': 'bulk',
+        'X-Auto-Response-Suppress': 'All',
+        'Auto-Submitted': 'auto-generated',
+      },
     });
   }
 }
