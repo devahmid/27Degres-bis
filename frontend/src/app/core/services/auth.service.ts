@@ -57,6 +57,10 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  getToken(): string | null {
+    return this.storage.getToken();
+  }
+
   hasRole(role: string): boolean {
     const user = this.getCurrentUser();
     return user?.role === role || user?.role === 'admin';

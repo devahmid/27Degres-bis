@@ -23,6 +23,7 @@
     "@auth0/angular-jwt": "^5.2.0",
     "date-fns": "^2.30.0",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.3",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.2"
   },
@@ -43,12 +44,3 @@
     "typescript": "~5.2.2"
   }
 }
-
-
-
-
-
-
-
-
-

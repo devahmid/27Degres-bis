@@ -19,6 +19,7 @@ import { MailModule } from './mail/mail.module';
 import { IdeasModule } from './ideas/ideas.module';
 import { BroadcastModule } from './broadcast/broadcast.module';
 import { AccountingModule } from './accounting/accounting.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AccountingModule } from './accounting/accounting.module';
     IdeasModule,
     BroadcastModule,
     AccountingModule,
+    RealtimeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

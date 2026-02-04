@@ -49,6 +49,7 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api');
 
+  // WebSocket configuration is handled by the gateway
   const port = process.env.PORT || 3000;
   
   try {
