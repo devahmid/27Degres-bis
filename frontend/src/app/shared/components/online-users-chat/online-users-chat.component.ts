@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RealtimeService, OnlineUser, ChatMessage } from '../../../core/services/realtime.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -47,7 +48,9 @@ import { Subscription } from 'rxjs';
           </div>
           <div *ngFor="let user of onlineUsers" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
             <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span class="font-medium">{{ user.firstName }} {{ user.lastName }}</span>
+            <span class="font-medium" [class.text-primary]="user.userId === currentUserId" [class.font-bold]="user.userId === currentUserId">
+              {{ user.userId === currentUserId ? 'Moi' : (user.firstName + ' ' + user.lastName) }}
+            </span>
             <span class="text-xs text-gray-500 capitalize">({{ user.role }})</span>
           </div>
         </mat-card-content>
@@ -74,15 +77,26 @@ import { Subscription } from 'rxjs';
             </div>
             <div *ngFor="let msg of chatMessages" class="mb-4">
               <div class="flex items-start gap-2">
-                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  {{ msg.firstName.charAt(0) }}{{ msg.lastName.charAt(0) }}
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" 
+                     [class.bg-primary]="msg.userId === currentUserId"
+                     [class.bg-gray-500]="msg.userId !== currentUserId">
+                  {{ msg.userId === currentUserId ? 'M' : (msg.firstName.charAt(0) + msg.lastName.charAt(0)) }}
                 </div>
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm">{{ msg.firstName }} {{ msg.lastName }}</span>
+                    <span class="font-semibold text-sm" 
+                          [class.text-primary]="msg.userId === currentUserId"
+                          [class.text-gray-700]="msg.userId !== currentUserId">
+                      {{ msg.userId === currentUserId ? 'Moi' : (msg.firstName + ' ' + msg.lastName) }}
+                    </span>
                     <span class="text-xs text-gray-500">{{ formatTime(msg.timestamp) }}</span>
                   </div>
-                  <p class="text-sm text-gray-700 bg-white p-2 rounded-lg">{{ msg.message }}</p>
+                  <p class="text-sm text-gray-700 bg-white p-2 rounded-lg" 
+                     [class.bg-primary]="msg.userId === currentUserId"
+                     [class.text-white]="msg.userId === currentUserId"
+                     [class.bg-gray-50]="msg.userId !== currentUserId">
+                    {{ msg.message }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -187,10 +201,16 @@ export class OnlineUsersChatComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
+  currentUserId: number | null = null;
+
   constructor(
     private realtimeService: RealtimeService,
-    private notification: NotificationService
-  ) {}
+    private notification: NotificationService,
+    private authService: AuthService
+  ) {
+    const user = this.authService.getCurrentUser();
+    this.currentUserId = user?.id || null;
+  }
 
   ngOnInit(): void {
     // Connecter au WebSocket seulement si l'utilisateur est authentifié
@@ -216,7 +236,8 @@ export class OnlineUsersChatComponent implements OnInit, OnDestroy {
         this.scrollToBottom();
         
         // Si le chat n'est pas ouvert, incrémenter le compteur de messages non lus
-        if (!this.showChat) {
+        // Ne pas notifier si c'est l'utilisateur actuel qui envoie le message
+        if (!this.showChat && message.userId !== this.currentUserId) {
           this.unreadCount++;
           this.notification.showInfo(`${message.firstName} ${message.lastName}: ${message.message.substring(0, 50)}...`);
         }
@@ -226,7 +247,8 @@ export class OnlineUsersChatComponent implements OnInit, OnDestroy {
     // S'abonner aux notifications d'utilisateurs en ligne
     this.subscriptions.push(
       this.realtimeService.getUserOnline().subscribe(user => {
-        if (!this.showOnlineUsers) {
+        // Ne pas notifier si c'est l'utilisateur actuel qui se connecte
+        if (user.userId !== this.currentUserId && !this.showOnlineUsers) {
           this.notification.showSuccess(`${user.firstName} ${user.lastName} est maintenant en ligne`);
         }
       })
