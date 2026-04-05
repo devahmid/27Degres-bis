@@ -2,8 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Expense, ExpenseCategory } from './entities/expense.entity';
+import { TreasuryOpeningBalance } from './entities/treasury-opening-balance.entity';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { SetOpeningBalanceDto } from './dto/set-opening-balance.dto';
 import { CotisationsService } from '../cotisations/cotisations.service';
 import { SupabaseService } from '../storage/supabase.service';
 
@@ -12,6 +14,8 @@ export class AccountingService {
   constructor(
     @InjectRepository(Expense)
     private expensesRepository: Repository<Expense>,
+    @InjectRepository(TreasuryOpeningBalance)
+    private openingBalanceRepository: Repository<TreasuryOpeningBalance>,
     private cotisationsService: CotisationsService,
     private supabaseService: SupabaseService,
   ) {}
@@ -146,8 +150,28 @@ export class AccountingService {
     };
   }
 
+  async getOpeningBalanceForYear(year: number): Promise<TreasuryOpeningBalance | null> {
+    return this.openingBalanceRepository.findOne({ where: { year } });
+  }
+
+  async setOpeningBalanceForYear(year: number, dto: SetOpeningBalanceDto): Promise<TreasuryOpeningBalance> {
+    let row = await this.openingBalanceRepository.findOne({ where: { year } });
+    if (!row) {
+      row = this.openingBalanceRepository.create({ year, amount: dto.amount, note: dto.note });
+    } else {
+      row.amount = dto.amount;
+      row.note = dto.note;
+    }
+    return this.openingBalanceRepository.save(row);
+  }
+
   async getYearlySummary(year: number): Promise<{
     year: number;
+    /** Cotisations encaissées (payées) sur l'année */
+    cotisationsRevenue: number;
+    /** Report de trésorerie (solde d'ouverture saisi pour l'exercice) */
+    openingBalance: number;
+    /** Recettes totales = cotisations + report */
     totalRevenue: number;
     totalExpenses: number;
     balance: number;
@@ -155,16 +179,17 @@ export class AccountingService {
     cotisationsCount: number;
     expensesCount: number;
   }> {
-    // Calculer les recettes (cotisations payées de l'année)
     const cotisations = await this.cotisationsService.findByYear(year);
     const paidCotisations = cotisations.filter(c => c.status === 'paid');
-    const totalRevenue = paidCotisations.reduce((sum, c) => sum + Number(c.amount), 0);
+    const cotisationsRevenue = paidCotisations.reduce((sum, c) => sum + Number(c.amount), 0);
 
-    // Calculer les dépenses de l'année
+    const openingRow = await this.openingBalanceRepository.findOne({ where: { year } });
+    const openingBalance = openingRow ? Number(openingRow.amount) : 0;
+    const totalRevenue = cotisationsRevenue + openingBalance;
+
     const expenses = await this.findByYear(year);
     const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
-    // Répartition par catégorie
     const expensesByCategory: { [key: string]: number } = {};
     expenses.forEach(expense => {
       const category = expense.category;
@@ -176,6 +201,8 @@ export class AccountingService {
 
     return {
       year,
+      cotisationsRevenue,
+      openingBalance,
       totalRevenue,
       totalExpenses,
       balance: totalRevenue - totalExpenses,

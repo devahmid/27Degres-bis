@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Expense, ExpenseCategory, YearlySummary } from '../models/expense.model';
+import { Expense, ExpenseCategory, YearlySummary, TreasuryOpeningBalanceRow } from '../models/expense.model';
 
 @Injectable({
   providedIn: 'root'
@@ -72,6 +72,14 @@ export class AccountingService {
 
   getYearlySummary(year: number): Observable<YearlySummary> {
     return this.http.get<YearlySummary>(`${this.apiUrl}/summary/${year}`);
+  }
+
+  getOpeningBalance(year: number): Observable<TreasuryOpeningBalanceRow | null> {
+    return this.http.get<TreasuryOpeningBalanceRow | null>(`${this.apiUrl}/opening-balance/${year}`);
+  }
+
+  setOpeningBalance(year: number, body: { amount: number; note?: string }): Observable<TreasuryOpeningBalanceRow> {
+    return this.http.put<TreasuryOpeningBalanceRow>(`${this.apiUrl}/opening-balance/${year}`, body);
   }
 
   getCategoryLabels(): Observable<{ [key: string]: string }> {

@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule } from '@angular/material/radio';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -11,7 +15,7 @@ import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
 import { FormatContentPipe } from '../../../shared/pipes/format-content.pipe';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { EventsService } from '../../../core/services/events.service';
+import { EventsService, EventCarpoolEntry } from '../../../core/services/events.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { EventRegistrationDialogComponent } from '../event-registration-dialog/event-registration-dialog.component';
@@ -33,7 +37,20 @@ interface PublicEventRegistration {
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, DateFormatPipe, FormatContentPipe],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatRadioModule,
+    DateFormatPipe,
+    FormatContentPipe,
+  ],
   templateUrl: './event-detail.component.html',
   styleUrl: './event-detail.component.scss'
 })
@@ -44,6 +61,13 @@ export class EventDetailComponent implements OnInit {
   registrations: PublicEventRegistration[] = [];
   loadingRegistrations = false;
   expandedRegistrationId: number | null = null;
+  carpoolEntries: EventCarpoolEntry[] = [];
+  carpoolLoading = false;
+  cpKind: 'offer' | 'seek' = 'offer';
+  cpDeparture = '';
+  cpSeats = 1;
+  cpComment = '';
+  carpoolSubmitting = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -59,8 +83,6 @@ export class EventDetailComponent implements OnInit {
     if (eventId) {
       const id = +eventId;
       this.event$ = this.http.get<Event>(`${environment.apiUrl}/events/${id}`);
-      
-      // Vérifier si l'utilisateur est déjà inscrit et charger les inscriptions
       if (this.authService.isLoggedIn()) {
         this.checkRegistrationStatus(id);
         this.loadRegistrations(id);
@@ -122,13 +144,83 @@ export class EventDetailComponent implements OnInit {
       next: (response) => {
         this.isRegistered = response.registered;
         this.checkingRegistration = false;
+        if (response.registered) {
+          this.loadCarpool(eventId);
+        } else {
+          this.carpoolEntries = [];
+        }
       },
       error: () => {
-        // Si l'utilisateur n'est pas connecté ou erreur, on considère qu'il n'est pas inscrit
         this.isRegistered = false;
         this.checkingRegistration = false;
+        this.carpoolEntries = [];
       }
     });
+  }
+
+  loadCarpool(eventId: number): void {
+    if (!this.authService.isLoggedIn()) return;
+    this.carpoolLoading = true;
+    this.eventsService.getEventCarpool(eventId).subscribe({
+      next: (rows) => {
+        this.carpoolEntries = rows;
+        this.carpoolLoading = false;
+      },
+      error: () => {
+        this.carpoolEntries = [];
+        this.carpoolLoading = false;
+      },
+    });
+  }
+
+  submitCarpool(eventId: number): void {
+    const departure = this.cpDeparture.trim();
+    if (departure.length < 2) {
+      this.notification.showError('Indiquez une zone ou ville de départ');
+      return;
+    }
+    if (this.cpKind === 'offer' && (!this.cpSeats || this.cpSeats < 1)) {
+      this.notification.showError('Indiquez le nombre de places proposées');
+      return;
+    }
+    this.carpoolSubmitting = true;
+    this.eventsService
+      .createEventCarpool(eventId, {
+        kind: this.cpKind,
+        departureArea: departure,
+        seatsOffered: this.cpKind === 'offer' ? this.cpSeats : undefined,
+        comment: this.cpComment.trim() || undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.carpoolSubmitting = false;
+          this.notification.showSuccess('Annonce enregistrée');
+          this.cpDeparture = '';
+          this.cpComment = '';
+          this.cpSeats = 1;
+          this.loadCarpool(eventId);
+        },
+        error: (err) => {
+          this.carpoolSubmitting = false;
+          this.notification.showError(err.error?.message || 'Erreur');
+        },
+      });
+  }
+
+  deleteCarpoolEntry(carpoolId: number, eventId: number): void {
+    if (!confirm('Supprimer cette annonce ?')) return;
+    this.eventsService.deleteEventCarpool(carpoolId).subscribe({
+      next: () => {
+        this.notification.showSuccess('Annonce supprimée');
+        this.loadCarpool(eventId);
+      },
+      error: () => this.notification.showError('Suppression impossible'),
+    });
+  }
+
+  isOwnCarpoolEntry(entry: EventCarpoolEntry): boolean {
+    const u = this.authService.getCurrentUser();
+    return !!u && u.id === entry.user.id;
   }
 
   registerForEvent(event: Event): void {
@@ -152,9 +244,9 @@ export class EventDetailComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result: boolean) => {
       if (result) {
-        // Recharger le statut d'inscription et les inscriptions
         this.checkRegistrationStatus(event.id);
         this.loadRegistrations(event.id);
+        this.loadCarpool(event.id);
       }
     });
   }
@@ -169,7 +261,7 @@ export class EventDetailComponent implements OnInit {
         next: () => {
           this.notification.showSuccess('Désinscription réussie');
           this.isRegistered = false;
-          // Recharger les inscriptions
+          this.carpoolEntries = [];
           this.loadRegistrations(eventId);
         },
         error: (error) => {

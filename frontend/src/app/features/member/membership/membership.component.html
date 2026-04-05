@@ -19,7 +19,16 @@
         <p class="mt-2">Montant : 60 €</p>
       </ng-template>
     </mat-card-content>
-    <mat-card-actions>
+    <mat-card-actions class="flex flex-col items-start gap-3">
+      <a
+        *ngIf="paymentInfo?.ribDocumentUrl && (currentYearStatus$ | async)?.status !== 'paid'"
+        mat-stroked-button
+        color="primary"
+        [href]="paymentInfo!.ribDocumentUrl!"
+        target="_blank"
+        rel="noopener noreferrer">
+        Télécharger le RIB (coordonnées bancaires)
+      </a>
       <button 
         mat-raised-button 
         color="primary" 

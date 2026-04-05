@@ -28,6 +28,7 @@ import { NotificationService } from '../../../core/services/notification.service
 export class MembershipComponent implements OnInit {
   currentYearStatus$!: Observable<Cotisation | null>;
   history$!: Observable<Cotisation[]>;
+  paymentInfo: { membershipUrl: string; ribDocumentUrl: string | null } | null = null;
   currentYear = new Date().getFullYear();
 
   displayedColumns: string[] = ['year', 'amount', 'status', 'paymentDate', 'receipt'];
@@ -40,6 +41,12 @@ export class MembershipComponent implements OnInit {
   ngOnInit(): void {
     this.currentYearStatus$ = this.http.get<Cotisation | null>(`${environment.apiUrl}/cotisations/current`);
     this.history$ = this.http.get<Cotisation[]>(`${environment.apiUrl}/cotisations/history`);
+    this.http
+      .get<{ membershipUrl: string; ribDocumentUrl: string | null }>(`${environment.apiUrl}/cotisations/payment-info`)
+      .subscribe({
+        next: (info) => (this.paymentInfo = info),
+        error: () => (this.paymentInfo = null),
+      });
   }
 
   payCotisation(): void {

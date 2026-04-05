@@ -38,12 +38,24 @@ export interface Expense {
 
 export interface YearlySummary {
   year: number;
+  /** Cotisations encaissées sur l'année */
+  cotisationsRevenue: number;
+  /** Report de trésorerie (solde d'ouverture) */
+  openingBalance: number;
+  /** Cotisations + report */
   totalRevenue: number;
   totalExpenses: number;
   balance: number;
   expensesByCategory: { [key: string]: number };
   cotisationsCount: number;
   expensesCount: number;
+}
+
+export interface TreasuryOpeningBalanceRow {
+  id: number;
+  year: number;
+  amount: number;
+  note?: string;
 }
 
 export const EXPENSE_CATEGORY_LABELS: { [key in ExpenseCategory]: string } = {

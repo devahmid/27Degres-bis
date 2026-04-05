@@ -6,18 +6,19 @@ import { HttpClient } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NotificationService } from '../../../core/services/notification.service';
 import { environment } from '../../../../environments/environment';
+import { User } from '../../../core/models/user.model';
+import { Observable } from 'rxjs';
 
 enum RecipientType {
   ALL_ACTIVE = 'all_active',
   NEWSLETTER_SUBSCRIBERS = 'newsletter_subscribers',
   CUSTOM = 'custom',
+  SINGLE_MEMBER = 'single_member',
 }
 
 @Component({
@@ -30,8 +31,6 @@ enum RecipientType {
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatInputModule,
-    MatFormFieldModule,
     MatRadioModule,
     MatChipsModule,
     MatTooltipModule,
@@ -46,6 +45,8 @@ export class BroadcastEmailComponent implements OnInit {
   customEmails: string[] = [];
   customEmailInput = '';
   lastResult: { sent: number; failed: number } | null = null;
+  users$!: Observable<User[]>;
+  singleMemberId: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -59,7 +60,9 @@ export class BroadcastEmailComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.users$ = this.http.get<User[]>(`${environment.apiUrl}/users/admin/all`);
+  }
 
   get currentRecipientType(): RecipientType {
     return this.broadcastForm.get('recipientType')?.value;
@@ -93,13 +96,23 @@ export class BroadcastEmailComponent implements OnInit {
       return;
     }
 
+    if (this.currentRecipientType === RecipientType.SINGLE_MEMBER && (this.singleMemberId == null || this.singleMemberId <= 0)) {
+      this.notification.showError('Sélectionnez un membre dans la liste');
+      return;
+    }
+
     const formValue = this.broadcastForm.value;
-    const payload = {
+    const payload: Record<string, unknown> = {
       subject: formValue.subject,
       message: formValue.message,
       recipientType: formValue.recipientType,
-      ...(formValue.recipientType === RecipientType.CUSTOM && { customRecipients: this.customEmails }),
     };
+    if (formValue.recipientType === RecipientType.CUSTOM) {
+      payload['customRecipients'] = this.customEmails;
+    }
+    if (formValue.recipientType === RecipientType.SINGLE_MEMBER) {
+      payload['userId'] = this.singleMemberId;
+    }
 
     // Confirmation avant envoi
     const recipientCount = this.getRecipientCountLabel();
@@ -125,6 +138,7 @@ export class BroadcastEmailComponent implements OnInit {
             });
             this.customEmails = [];
             this.customEmailInput = '';
+            this.singleMemberId = null;
           } else {
             this.notification.showWarning(
               `Envoi partiel : ${result.sent} envoyé(s), ${result.failed} échec(s)`
@@ -149,6 +163,8 @@ export class BroadcastEmailComponent implements OnInit {
         return 'tous les membres abonnés à la newsletter';
       case RecipientType.CUSTOM:
         return `${this.customEmails.length} destinataire(s) personnalisé(s)`;
+      case RecipientType.SINGLE_MEMBER:
+        return '1 membre sélectionné';
       default:
         return 'les destinataires sélectionnés';
     }

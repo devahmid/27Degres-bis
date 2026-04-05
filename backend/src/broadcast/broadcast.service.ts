@@ -37,6 +37,18 @@ export class BroadcastService {
         recipients = dto.customRecipients.map(email => ({ email, firstName: 'Membre' }));
         break;
 
+      case BroadcastRecipientType.SINGLE_MEMBER: {
+        if (dto.userId == null) {
+          throw new BadRequestException('userId est requis pour un envoi à un seul membre');
+        }
+        const user = await this.usersService.findOne(dto.userId);
+        if (!user.email) {
+          throw new BadRequestException('Ce membre n\'a pas d\'adresse email');
+        }
+        recipients = [{ email: user.email, firstName: user.firstName || 'Membre' }];
+        break;
+      }
+
       default:
         throw new BadRequestException('Type de destinataire invalide');
     }

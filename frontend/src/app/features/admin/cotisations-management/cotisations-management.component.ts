@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { AddCotisationDialogComponent } from './add-cotisation-dialog.component';
 import { FormsModule } from '@angular/forms';
@@ -36,7 +35,6 @@ interface CotisationWithUser extends Cotisation {
     MatButtonModule,
     MatIconModule,
     MatTableModule,
-    MatMenuModule,
     MatDialogModule,
     FormsModule,
     BadgeStatusComponent,
@@ -44,15 +42,21 @@ interface CotisationWithUser extends Cotisation {
   ],
   template: `
     <div class="max-w-7xl mx-auto px-4">
-      <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+      <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 class="text-4xl font-bold mb-2 text-dark">Gestion des Cotisations</h1>
           <p class="text-gray-600">Gérez toutes les cotisations de l'association</p>
         </div>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
-          <mat-icon class="mr-2">add</mat-icon>
-          Ajouter une cotisation
-        </button>
+        <div class="flex flex-wrap gap-2">
+          <button mat-stroked-button color="primary" (click)="sendBulkPaymentReminders()" [disabled]="sendingReminders">
+            <mat-icon class="mr-2">mail</mat-icon>
+            Relancer les impayés (année affichée)
+          </button>
+          <button mat-raised-button color="primary" (click)="openCreateDialog()">
+            <mat-icon class="mr-2">add</mat-icon>
+            Ajouter une cotisation
+          </button>
+        </div>
       </div>
 
       <!-- Filters -->
@@ -140,42 +144,45 @@ interface CotisationWithUser extends Cotisation {
 
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let cotisation">
-                <button mat-icon-button [matMenuTriggerFor]="menu" [matMenuTriggerData]="{cotisation: cotisation}" type="button">
+              <td mat-cell *matCellDef="let cotisation" class="relative cotisation-menu-container">
+                <button mat-icon-button type="button" (click)="toggleMenu(cotisation.id, $event)">
                   <mat-icon>more_vert</mat-icon>
                 </button>
+                <div
+                  *ngIf="openMenuId === cotisation.id"
+                  class="menu-dropdown absolute right-0 top-10 z-50 min-w-[220px] rounded-lg border border-gray-200 bg-white p-1 shadow-lg"
+                  (click)="$event.stopPropagation()">
+                  <button class="menu-item flex w-full items-center gap-2 rounded-md px-3 py-2 text-left hover:bg-gray-100" (click)="updateStatus(cotisation, 'paid')" *ngIf="cotisation.status !== 'paid'">
+                    <mat-icon class="text-lg">check_circle</mat-icon>
+                    <span>Marquer comme payée</span>
+                  </button>
+                  <button class="menu-item flex w-full items-center gap-2 rounded-md px-3 py-2 text-left hover:bg-gray-100" (click)="updateStatus(cotisation, 'pending')" *ngIf="cotisation.status !== 'pending'">
+                    <mat-icon class="text-lg">schedule</mat-icon>
+                    <span>Marquer en attente</span>
+                  </button>
+                  <button class="menu-item flex w-full items-center gap-2 rounded-md px-3 py-2 text-left hover:bg-gray-100" (click)="updateStatus(cotisation, 'overdue')" *ngIf="cotisation.status !== 'overdue'">
+                    <mat-icon class="text-lg">warning</mat-icon>
+                    <span>Marquer en retard</span>
+                  </button>
+                  <button class="menu-item flex w-full items-center gap-2 rounded-md px-3 py-2 text-left hover:bg-gray-100" (click)="sendPaymentReminder(cotisation)" *ngIf="cotisation.status !== 'paid'">
+                    <mat-icon class="text-lg">mail</mat-icon>
+                    <span>Envoyer rappel (email + lien)</span>
+                  </button>
+                  <button class="menu-item flex w-full items-center gap-2 rounded-md px-3 py-2 text-left hover:bg-gray-100" (click)="editCotisation(cotisation)">
+                    <mat-icon class="text-lg">edit</mat-icon>
+                    <span>Modifier</span>
+                  </button>
+                  <button class="menu-item flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-red-600 hover:bg-red-50" (click)="deleteCotisation(cotisation)">
+                    <mat-icon class="text-lg">delete</mat-icon>
+                    <span>Supprimer</span>
+                  </button>
+                </div>
               </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
-          
-          <!-- Menu défini une seule fois en dehors du tableau -->
-          <mat-menu #menu="matMenu" [hasBackdrop]="false">
-            <ng-template matMenuContent let-cotisation="cotisation">
-              <button mat-menu-item (click)="updateStatus(cotisation, 'paid')" *ngIf="cotisation.status !== 'paid'">
-                <mat-icon>check_circle</mat-icon>
-                <span>Marquer comme payée</span>
-              </button>
-              <button mat-menu-item (click)="updateStatus(cotisation, 'pending')" *ngIf="cotisation.status !== 'pending'">
-                <mat-icon>schedule</mat-icon>
-                <span>Marquer en attente</span>
-              </button>
-              <button mat-menu-item (click)="updateStatus(cotisation, 'overdue')" *ngIf="cotisation.status !== 'overdue'">
-                <mat-icon>warning</mat-icon>
-                <span>Marquer en retard</span>
-              </button>
-              <button mat-menu-item (click)="editCotisation(cotisation)">
-                <mat-icon>edit</mat-icon>
-                <span>Modifier</span>
-              </button>
-              <button mat-menu-item (click)="deleteCotisation(cotisation)" class="text-red-600">
-                <mat-icon>delete</mat-icon>
-                <span>Supprimer</span>
-              </button>
-            </ng-template>
-          </mat-menu>
           
           <div *ngIf="(filteredCotisations$ | async)?.length === 0" class="text-center py-8 text-gray-500">
             Aucune cotisation trouvée
@@ -186,7 +193,7 @@ interface CotisationWithUser extends Cotisation {
   `,
   styleUrl: './cotisations-management.component.scss'
 })
-export class CotisationsManagementComponent implements OnInit {
+export class CotisationsManagementComponent implements OnInit, OnDestroy {
   cotisations$!: Observable<CotisationWithUser[]>;
   filteredCotisations$!: Observable<CotisationWithUser[]>;
   searchTerm = '';
@@ -194,6 +201,8 @@ export class CotisationsManagementComponent implements OnInit {
   filterStatus = '';
   currentYear = new Date().getFullYear();
   displayedColumns: string[] = ['user', 'year', 'amount', 'status', 'paymentDate', 'actions'];
+  openMenuId: number | null = null;
+  sendingReminders = false;
 
   constructor(
     private http: HttpClient,
@@ -203,6 +212,10 @@ export class CotisationsManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCotisations();
+  }
+
+  ngOnDestroy(): void {
+    this.closeMenu();
   }
 
   loadCotisations(): void {
@@ -250,6 +263,7 @@ export class CotisationsManagementComponent implements OnInit {
   }
 
   updateStatus(cotisation: CotisationWithUser, status: 'paid' | 'pending' | 'overdue'): void {
+    this.closeMenu();
     this.http.patch<CotisationWithUser>(`${environment.apiUrl}/cotisations/admin/${cotisation.id}/status`, {
       status
     }).subscribe({
@@ -264,11 +278,13 @@ export class CotisationsManagementComponent implements OnInit {
   }
 
   editCotisation(cotisation: CotisationWithUser): void {
+    this.closeMenu();
     // TODO: Open edit dialog
     this.notification.showInfo('Fonctionnalité à venir');
   }
 
   deleteCotisation(cotisation: CotisationWithUser): void {
+    this.closeMenu();
     if (confirm(`Êtes-vous sûr de vouloir supprimer cette cotisation ?`)) {
       this.http.delete(`${environment.apiUrl}/cotisations/admin/${cotisation.id}`).subscribe({
         next: () => {
@@ -280,6 +296,51 @@ export class CotisationsManagementComponent implements OnInit {
         }
       });
     }
+  }
+
+  sendPaymentReminder(cotisation: CotisationWithUser): void {
+    this.closeMenu();
+    if (!confirm(`Envoyer un email de rappel à ${cotisation.user?.firstName} ${cotisation.user?.lastName} ?`)) {
+      return;
+    }
+    this.http
+      .post<{ sent: number; failed: number }>(`${environment.apiUrl}/cotisations/admin/send-payment-reminders`, {
+        cotisationIds: [cotisation.id],
+      })
+      .subscribe({
+        next: (r) => {
+          this.notification.showSuccess(
+            r.failed ? `Envoi partiel : ${r.sent} OK, ${r.failed} échec(s)` : 'Rappel envoyé',
+          );
+        },
+        error: (err) => {
+          this.notification.showError(err.error?.message || 'Erreur lors de l\'envoi');
+        },
+      });
+  }
+
+  sendBulkPaymentReminders(): void {
+    const year = this.filterYear && this.filterYear !== '' ? +this.filterYear : this.currentYear;
+    if (!confirm(`Envoyer un rappel à tous les membres en attente ou en retard pour l'année ${year} ?`)) {
+      return;
+    }
+    this.sendingReminders = true;
+    this.http
+      .post<{ sent: number; failed: number }>(`${environment.apiUrl}/cotisations/admin/send-payment-reminders`, {
+        year,
+      })
+      .subscribe({
+        next: (r) => {
+          this.sendingReminders = false;
+          this.notification.showSuccess(
+            `Relances : ${r.sent} envoyée(s)${r.failed ? `, ${r.failed} échec(s)` : ''}`,
+          );
+        },
+        error: (err) => {
+          this.sendingReminders = false;
+          this.notification.showError(err.error?.message || 'Erreur lors des relances');
+        },
+      });
   }
 
   openCreateDialog(): void {
@@ -294,6 +355,23 @@ export class CotisationsManagementComponent implements OnInit {
         this.loadCotisations();
       }
     });
+  }
+
+  toggleMenu(cotisationId: number, event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.openMenuId = this.openMenuId === cotisationId ? null : cotisationId;
+  }
+
+  closeMenu(): void {
+    this.openMenuId = null;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.cotisation-menu-container')) {
+      this.closeMenu();
+    }
   }
 }
 

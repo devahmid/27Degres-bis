@@ -4,27 +4,26 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
-  // Enable CORS 
-  // test commentaire
-  const isDevelopment = process.env.NODE_ENV !== 'production';
+
+  // Enable CORS
   const allowedOrigins = [
     'http://localhost:4200',
     'http://localhost:3000',
+    'https://27degres-basseville.fr',
+    'https://www.27degres-basseville.fr',
+    'https://degres-basseville.fr',
+    'https://www.degres-basseville.fr',
     process.env.FRONTEND_URL,
   ].filter(Boolean); // Remove undefined values
 
   app.enableCors({
-    origin: isDevelopment 
-      ? true // Allow all origins in development
-      : (origin, callback) => {
-          // In production, only allow specific origins
-          if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-          } else {
-            callback(new Error('Not allowed by CORS'));
-          }
-        },
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -52,7 +51,7 @@ async function bootstrap() {
 
   // WebSocket configuration is handled by the gateway
   const port = process.env.PORT || 3000;
-  
+
   try {
     await app.listen(port);
     console.log(`✅ Application is running on: http://localhost:${port}/api`);
@@ -68,4 +67,3 @@ async function bootstrap() {
   }
 }
 bootstrap();
-

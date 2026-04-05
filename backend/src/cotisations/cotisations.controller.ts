@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { CotisationsService } from './cotisations.service';
 import { CreateCotisationDto } from './dto/create-cotisation.dto';
+import { SendPaymentRemindersDto } from './dto/send-payment-reminders.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -19,6 +20,12 @@ export class CotisationsController {
   @Get('history')
   getHistory(@Request() req) {
     return this.cotisationsService.findHistory(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('payment-info')
+  getPaymentInfo() {
+    return this.cotisationsService.getPaymentInfoForMember();
   }
 
   @Post()
@@ -43,6 +50,13 @@ export class CotisationsController {
   @Roles('admin')
   getStatistics(@Query('year') year?: number) {
     return this.cotisationsService.getStatistics(year);
+  }
+
+  @Post('admin/send-payment-reminders')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  sendPaymentReminders(@Body() dto: SendPaymentRemindersDto) {
+    return this.cotisationsService.sendPaymentReminders(dto);
   }
 
   @Get('admin/:id')

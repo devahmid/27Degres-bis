@@ -60,7 +60,9 @@
               <p class="text-green-100 text-sm mb-1">Total Recettes</p>
               <p class="text-3xl font-bold">{{ formatAmount(summary.totalRevenue) }}</p>
               <p class="text-green-100 text-sm mt-2">
-                {{ summary.cotisationsCount }} cotisation(s) payée(s)
+                {{ summary.cotisationsCount }} cotisation(s) · 
+                {{ formatAmount(summary.cotisationsRevenue) }} encaissé
+                <span *ngIf="summary.openingBalance > 0"> + {{ formatAmount(summary.openingBalance) }} report</span>
               </p>
             </div>
             <mat-icon class="text-5xl opacity-50">trending_up</mat-icon>
@@ -101,6 +103,32 @@
         </mat-card-content>
       </mat-card>
     </div>
+
+    <!-- Report de trésorerie (solde d'ouverture) -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title class="text-xl font-bold text-dark flex items-center gap-2">
+          <mat-icon class="text-primary">savings</mat-icon>
+          Report de trésorerie (exercice {{ selectedYear }})
+        </mat-card-title>
+        <mat-card-subtitle>Montant restant des années précédentes à intégrer aux recettes de cet exercice</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content class="flex flex-col md:flex-row md:items-end gap-4">
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-dark mb-1">Montant (€)</label>
+          <input type="number" min="0" step="0.01" [(ngModel)]="openingAmount"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="flex-[2]">
+          <label class="block text-sm font-medium text-dark mb-1">Commentaire (optionnel)</label>
+          <input type="text" [(ngModel)]="openingNote" placeholder="Ex : solde caisse fin N-1"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <button mat-raised-button color="primary" type="button" (click)="saveOpeningBalance()" [disabled]="savingOpening">
+          Enregistrer le report
+        </button>
+      </mat-card-content>
+    </mat-card>
 
     <!-- Détails par catégorie -->
     <mat-card>

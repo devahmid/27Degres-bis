@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Patch,
   Param,
@@ -19,6 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AccountingService } from './accounting.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { SetOpeningBalanceDto } from './dto/set-opening-balance.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -65,6 +67,19 @@ export class AccountingController {
   @Get('summary/:year')
   async getYearlySummary(@Param('year', ParseIntPipe) year: number) {
     return this.accountingService.getYearlySummary(year);
+  }
+
+  @Get('opening-balance/:year')
+  async getOpeningBalance(@Param('year', ParseIntPipe) year: number) {
+    return this.accountingService.getOpeningBalanceForYear(year);
+  }
+
+  @Put('opening-balance/:year')
+  async setOpeningBalance(
+    @Param('year', ParseIntPipe) year: number,
+    @Body() dto: SetOpeningBalanceDto,
+  ) {
+    return this.accountingService.setOpeningBalanceForYear(year, dto);
   }
 
   @Get('category-labels')
@@ -148,6 +163,8 @@ export class AccountingController {
     doc.fontSize(16).text('Résumé Financier', { underline: true });
     doc.moveDown();
     doc.fontSize(12);
+    doc.text(`Cotisations encaissées: ${summary.cotisationsRevenue.toFixed(2)} €`);
+    doc.text(`Report / solde d'ouverture: ${summary.openingBalance.toFixed(2)} €`);
     doc.text(`Total Recettes: ${summary.totalRevenue.toFixed(2)} €`);
     doc.text(`Total Dépenses: ${summary.totalExpenses.toFixed(2)} €`);
     doc.text(`Solde: ${summary.balance.toFixed(2)} €`, { 

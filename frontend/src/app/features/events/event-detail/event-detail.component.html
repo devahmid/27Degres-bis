@@ -150,11 +150,67 @@
       </div>
     </mat-card-content>
   </mat-card>
+
+  <!-- Covoiturage (membres inscrits uniquement) -->
+  <mat-card *ngIf="authService.isLoggedIn() && isRegistered" class="mt-6">
+    <mat-card-header>
+      <mat-card-title class="text-2xl flex items-center gap-2">
+        <mat-icon>directions_car</mat-icon>
+        Covoiturage
+      </mat-card-title>
+      <mat-card-subtitle>Proposez un trajet ou indiquez que vous cherchez une place (visible par les autres inscrits)</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content class="space-y-6">
+      <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+        <mat-radio-group [(ngModel)]="cpKind" class="flex flex-col sm:flex-row gap-4 mb-4">
+          <mat-radio-button value="offer">Je propose un trajet</mat-radio-button>
+          <mat-radio-button value="seek">Je cherche une place</mat-radio-button>
+        </mat-radio-group>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Départ (ville / zone)</mat-label>
+            <input matInput [(ngModel)]="cpDeparture" placeholder="Ex. : Caen nord" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="w-full" *ngIf="cpKind === 'offer'">
+            <mat-label>Places disponibles</mat-label>
+            <input matInput type="number" min="1" [(ngModel)]="cpSeats" />
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Commentaire (optionnel)</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="cpComment" placeholder="Horaire, précisions…"></textarea>
+        </mat-form-field>
+        <button mat-raised-button color="primary" type="button" (click)="submitCarpool(event.id)" [disabled]="carpoolSubmitting">
+          Publier mon annonce
+        </button>
+      </div>
+
+      <div *ngIf="carpoolLoading" class="text-center py-6 text-gray-500">
+        <mat-icon class="animate-spin">refresh</mat-icon> Chargement…
+      </div>
+      <div *ngIf="!carpoolLoading && carpoolEntries.length === 0" class="text-gray-600 text-sm">
+        Aucune annonce pour l’instant.
+      </div>
+      <div *ngIf="!carpoolLoading && carpoolEntries.length > 0" class="space-y-3">
+        <div *ngFor="let c of carpoolEntries" class="flex flex-wrap items-start justify-between gap-2 border rounded-lg p-4 bg-white">
+          <div>
+            <p class="font-semibold">
+              {{ c.user.firstName }} {{ c.user.lastName }}
+              <span class="text-sm font-normal text-gray-600 ml-2">
+                {{ c.kind === 'offer' ? 'Propose' : 'Cherche' }} · {{ c.departureArea }}
+              </span>
+            </p>
+            <p *ngIf="c.kind === 'offer' && c.seatsOffered" class="text-sm text-gray-700">{{ c.seatsOffered }} place(s)</p>
+            <p *ngIf="c.comment" class="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{{ c.comment }}</p>
+          </div>
+          <button *ngIf="isOwnCarpoolEntry(c)" mat-stroked-button color="warn" type="button" (click)="deleteCarpoolEntry(c.id, event.id)">
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>
-
-
-
-
 
 
 

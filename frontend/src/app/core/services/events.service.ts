@@ -28,6 +28,16 @@ export interface Event {
   updatedAt: Date;
 }
 
+export interface EventCarpoolEntry {
+  id: number;
+  kind: 'offer' | 'seek';
+  departureArea: string;
+  seatsOffered?: number;
+  comment?: string;
+  createdAt: string;
+  user: { id: number; firstName: string; lastName: string };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -187,5 +197,19 @@ export class EventsService {
   updateRegistration(registrationId: number, updateData: any): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/registrations/${registrationId}`, updateData);
   }
-}
 
+  getEventCarpool(eventId: number): Observable<EventCarpoolEntry[]> {
+    return this.http.get<EventCarpoolEntry[]>(`${this.apiUrl}/${eventId}/carpool`);
+  }
+
+  createEventCarpool(
+    eventId: number,
+    body: { kind: 'offer' | 'seek'; departureArea: string; seatsOffered?: number; comment?: string },
+  ): Observable<EventCarpoolEntry> {
+    return this.http.post<EventCarpoolEntry>(`${this.apiUrl}/${eventId}/carpool`, body);
+  }
+
+  deleteEventCarpool(carpoolId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/carpool/${carpoolId}`);
+  }
+}

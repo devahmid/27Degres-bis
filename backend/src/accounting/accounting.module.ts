@@ -3,12 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountingController } from './accounting.controller';
 import { AccountingService } from './accounting.service';
 import { Expense } from './entities/expense.entity';
+import { TreasuryOpeningBalance } from './entities/treasury-opening-balance.entity';
 import { CotisationsModule } from '../cotisations/cotisations.module';
 import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Expense]),
+    TypeOrmModule.forFeature([Expense, TreasuryOpeningBalance]),
     CotisationsModule,
     StorageModule,
   ],

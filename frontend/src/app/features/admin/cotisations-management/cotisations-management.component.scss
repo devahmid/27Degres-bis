@@ -1,11 +1,20 @@
-// Remove backdrop for menus and let Angular Material handle positioning
-::ng-deep {
-  // Hide backdrop for menus - menus don't need backdrop
-  .cdk-overlay-container:has(.mat-mdc-menu-panel) .cdk-overlay-backdrop {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    visibility: hidden !important;
-  }
+td.cotisation-menu-container {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+mat-card-content {
+  overflow: visible !important;
+}
+
+mat-card {
+  overflow: visible !important;
+}
+
+.menu-dropdown {
+  z-index: 99999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 

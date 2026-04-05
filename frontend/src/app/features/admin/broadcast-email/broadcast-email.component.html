@@ -89,7 +89,28 @@
                 <p class="text-sm text-gray-600">Choisissez manuellement les adresses email</p>
               </div>
             </mat-radio-button>
+            <mat-radio-button [value]="recipientType.SINGLE_MEMBER" class="mb-2">
+              <div class="ml-3 py-2">
+                <span class="font-semibold text-dark block mb-1">Un seul membre</span>
+                <p class="text-sm text-gray-600">Sélection dans l’annuaire des membres (email personnalisé)</p>
+              </div>
+            </mat-radio-button>
           </mat-radio-group>
+
+          <div *ngIf="currentRecipientType === recipientType.SINGLE_MEMBER" class="mt-6 bg-white rounded-lg p-4 border border-yellow-300">
+            <label class="block text-dark font-medium mb-2" for="broadcast-single-member">Membre</label>
+            <!-- Select natif : évite les bugs de positionnement du panneau CDK (mat-select qui s’ouvre « en haut »). -->
+            <select
+              id="broadcast-single-member"
+              class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-dark shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [(ngModel)]="singleMemberId"
+              [ngModelOptions]="{standalone: true}">
+              <option [ngValue]="null">Choisir un membre</option>
+              <option *ngFor="let u of (users$ | async)" [ngValue]="u.id">
+                {{ u.firstName }} {{ u.lastName }} — {{ u.email }}
+              </option>
+            </select>
+          </div>
 
           <!-- Gestion des emails personnalisés -->
           <div *ngIf="currentRecipientType === recipientType.CUSTOM" class="mt-6 bg-white rounded-lg p-4 border border-yellow-300">
@@ -151,7 +172,7 @@
           <button
             mat-stroked-button
             type="button"
-            (click)="broadcastForm.reset({ recipientType: recipientType.NEWSLETTER_SUBSCRIBERS }); customEmails = []; customEmailInput = ''; lastResult = null;"
+            (click)="broadcastForm.reset({ recipientType: recipientType.NEWSLETTER_SUBSCRIBERS }); customEmails = []; customEmailInput = ''; singleMemberId = null; lastResult = null;"
             [disabled]="isSubmitting"
             class="px-6">
             Réinitialiser
@@ -160,7 +181,7 @@
             mat-raised-button
             color="primary"
             type="submit"
-            [disabled]="broadcastForm.invalid || isSubmitting || (currentRecipientType === recipientType.CUSTOM && customEmails.length === 0)"
+            [disabled]="broadcastForm.invalid || isSubmitting || (currentRecipientType === recipientType.CUSTOM && customEmails.length === 0) || (currentRecipientType === recipientType.SINGLE_MEMBER && !singleMemberId)"
             class="px-8 flex items-center gap-2">
             <mat-icon *ngIf="!isSubmitting">send</mat-icon>
             <mat-icon *ngIf="isSubmitting" class="animate-spin">refresh</mat-icon>

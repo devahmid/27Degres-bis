@@ -295,6 +295,47 @@ export class MailService {
     });
   }
 
+  async sendCotisationReminderEmail(
+    email: string,
+    firstName: string,
+    year: number,
+    amount: number,
+    membershipUrl: string,
+    ribDocumentUrl?: string | null,
+  ): Promise<void> {
+    const ribBlock = ribDocumentUrl
+      ? `<p><a href="${ribDocumentUrl}" style="background-color: #E94E1B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Voir les coordonnées bancaires (RIB)</a></p>
+         <p style="color:#666;font-size:12px;">Si le bouton ne fonctionne pas, copiez ce lien : ${ribDocumentUrl}</p>`
+      : '<p style="color:#666;">Les coordonnées de paiement sont disponibles sur votre espace membre après connexion.</p>';
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: `Rappel : cotisation ${year} - Association 27 Degrés`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #E94E1B;">Rappel de cotisation</h2>
+          <p>Bonjour ${firstName},</p>
+          <p>Nous vous rappelons que votre cotisation pour l'année <strong>${year}</strong> 
+          d'un montant de <strong>${amount.toFixed(2)} €</strong> n'est pas encore enregistrée comme payée.</p>
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin:0;"><strong>Montant dû :</strong> ${amount.toFixed(2)} €</p>
+          </div>
+          <p>Pour régulariser votre situation, vous pouvez consulter votre espace cotisation :</p>
+          <p style="text-align: center; margin: 24px 0;">
+            <a href="${membershipUrl}" style="background-color: #1A3B5C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Accéder à mon espace cotisation</a>
+          </p>
+          ${ribBlock}
+          <p>Merci pour votre engagement auprès de l'association.</p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="color: #666; font-size: 12px;">Association 27 Degrés - Basse-Ville Génération</p>
+        </div>
+      `,
+      headers: {
+        'X-Auto-Response-Suppress': 'All',
+      },
+    });
+  }
+
   async sendBroadcastEmail(
     email: string,
     firstName: string,

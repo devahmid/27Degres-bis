@@ -1,0 +1,13 @@
+diff --git a/node_modules/@nestjs-modules/mailer/dist/mailer.service.js b/node_modules/@nestjs-modules/mailer/dist/mailer.service.js
+index 016055b..f7d9904 100644
+--- a/node_modules/@nestjs-modules/mailer/dist/mailer.service.js
++++ b/node_modules/@nestjs-modules/mailer/dist/mailer.service.js
+@@ -64,7 +64,7 @@ let MailerService = MailerService_1 = class MailerService {
+     verifyTransporter(transporter, name) {
+         const transporterName = name ? ` '${name}'` : '';
+         transporter.verify()
+-            .then(() => this.mailerLogger.error(`Transporter${transporterName} is ready`))
++            .then(() => this.mailerLogger.log(`Transporter${transporterName} is ready`))
+             .catch((error) => this.mailerLogger.error(`Error occurred while verifying the transporter${transporterName}}: ${error.message}`));
+     }
+     sendMail(sendMailOptions) {

@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
 import { EventRegistration } from './entities/event-registration.entity';
 import { EventImage } from './entities/event-image.entity';
+import { EventCarpool } from './entities/event-carpool.entity';
+import { CreateEventCarpoolDto } from './dto/create-event-carpool.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { SupabaseService } from '../storage/supabase.service';
@@ -20,6 +22,8 @@ export class EventsService {
     private registrationsRepository: Repository<EventRegistration>,
     @InjectRepository(EventImage)
     private eventImagesRepository: Repository<EventImage>,
+    @InjectRepository(EventCarpool)
+    private carpoolRepository: Repository<EventCarpool>,
     private supabaseService: SupabaseService,
     private mailService: MailService,
     private usersService: UsersService,
@@ -467,6 +471,93 @@ export class EventsService {
     }
 
     return this.registrationsRepository.save(registration);
+  }
+
+  async listCarpoolForEvent(eventId: number, viewerUserId: number): Promise<
+    Array<{
+      id: number;
+      kind: 'offer' | 'seek';
+      departureArea: string;
+      seatsOffered?: number;
+      comment?: string;
+      createdAt: Date;
+      user: { id: number; firstName: string; lastName: string };
+    }>
+  > {
+    await this.findOne(eventId);
+    const registered = await this.isRegistered(eventId, viewerUserId);
+    if (!registered) {
+      throw new ForbiddenException(
+        'Vous devez être inscrit à cet événement pour voir ou participer au covoiturage.',
+      );
+    }
+    const rows = await this.carpoolRepository.find({
+      where: { eventId },
+      relations: ['user'],
+      order: { createdAt: 'ASC' },
+    });
+    return rows.map(r => ({
+      id: r.id,
+      kind: r.kind,
+      departureArea: r.departureArea,
+      seatsOffered: r.seatsOffered ?? undefined,
+      comment: r.comment ?? undefined,
+      createdAt: r.createdAt,
+      user: {
+        id: r.user.id,
+        firstName: r.user.firstName,
+        lastName: r.user.lastName,
+      },
+    }));
+  }
+
+  async createCarpoolEntry(
+    eventId: number,
+    userId: number,
+    dto: CreateEventCarpoolDto,
+  ): Promise<EventCarpool> {
+    const registered = await this.isRegistered(eventId, userId);
+    if (!registered) {
+      throw new BadRequestException(
+        'Vous devez être inscrit à cet événement pour proposer ou demander un covoiturage.',
+      );
+    }
+    if (dto.kind === 'offer' && (dto.seatsOffered == null || dto.seatsOffered < 1)) {
+      throw new BadRequestException('Indiquez le nombre de places pour une proposition de trajet.');
+    }
+    if (dto.kind === 'seek') {
+      dto.seatsOffered = undefined;
+    }
+    await this.findOne(eventId);
+    const existing = await this.carpoolRepository.findOne({
+      where: { eventId, userId, kind: dto.kind },
+    });
+    if (existing) {
+      existing.departureArea = dto.departureArea;
+      existing.seatsOffered = dto.kind === 'offer' ? dto.seatsOffered : null;
+      existing.comment = dto.comment ?? null;
+      return this.carpoolRepository.save(existing);
+    }
+    const row = this.carpoolRepository.create({
+      eventId,
+      userId,
+      kind: dto.kind,
+      departureArea: dto.departureArea,
+      seatsOffered: dto.kind === 'offer' ? dto.seatsOffered : null,
+      comment: dto.comment,
+    });
+    return this.carpoolRepository.save(row);
+  }
+
+  async removeCarpoolEntry(carpoolId: number, userId: number): Promise<void> {
+    const row = await this.carpoolRepository.findOne({ where: { id: carpoolId } });
+    if (!row) {
+      throw new NotFoundException('Annonce de covoiturage introuvable');
+    }
+    if (row.userId !== userId) {
+      throw new BadRequestException('Vous ne pouvez supprimer que vos propres annonces.');
+    }
+    await this.carpoolRepository.remove(row);
   }
 }
 

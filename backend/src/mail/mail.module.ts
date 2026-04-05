@@ -10,20 +10,22 @@ import { MailController } from './mail.controller';
       useFactory: (configService: ConfigService) => {
         const smtpUser = configService.get('SMTP_USER');
         const smtpFrom = configService.get('SMTP_FROM') || smtpUser;
-        
+        const port = parseInt(configService.get('SMTP_PORT', '587'), 10);
+        const secureExplicit = configService.get('SMTP_SECURE', 'false') === 'true';
+        // Port 465 = soumission SSL directe (implicit TLS)
+        const secure = secureExplicit || port === 465;
+
         return {
           transport: {
             host: configService.get('SMTP_HOST', 'smtp.gmail.com'),
-            port: parseInt(configService.get('SMTP_PORT', '587')),
-            secure: configService.get('SMTP_SECURE', 'false') === 'true', // true pour 465, false pour autres ports
+            port,
+            secure,
             auth: {
               user: smtpUser,
               pass: configService.get('SMTP_PASSWORD'),
             },
             tls: {
-              // Ne pas rejeter les certificats non autorisés (utile pour certains serveurs)
               rejectUnauthorized: false,
-              ciphers: 'SSLv3',
             },
             logger: false,
             debug: false,

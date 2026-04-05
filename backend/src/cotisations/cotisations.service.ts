@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cotisation } from './entities/cotisation.entity';
@@ -6,6 +6,7 @@ import { CreateCotisationDto } from './dto/create-cotisation.dto';
 import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
+import { SendPaymentRemindersDto } from './dto/send-payment-reminders.dto';
 
 @Injectable()
 export class CotisationsService {
@@ -112,6 +113,68 @@ export class CotisationsService {
 
   async remove(id: number): Promise<void> {
     await this.cotisationsRepository.delete(id);
+  }
+
+  getPaymentInfoForMember(): {
+    membershipUrl: string;
+    ribDocumentUrl: string | null;
+  } {
+    const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:4200');
+    return {
+      membershipUrl: `${frontendUrl}/member/membership`,
+      ribDocumentUrl: this.configService.get<string>('RIB_DOCUMENT_URL') || null,
+    };
+  }
+
+  async sendPaymentReminders(dto: SendPaymentRemindersDto): Promise<{ sent: number; failed: number }> {
+    const year = dto.year ?? new Date().getFullYear();
+    let cotisations: Cotisation[];
+
+    if (dto.cotisationIds?.length) {
+      cotisations = [];
+      for (const id of dto.cotisationIds) {
+        const c = await this.findOne(id);
+        cotisations.push(c);
+      }
+    } else {
+      cotisations = await this.findByYear(year);
+      cotisations = cotisations.filter(c => c.status === 'pending' || c.status === 'overdue');
+    }
+
+    if (cotisations.length === 0) {
+      throw new BadRequestException('Aucune cotisation à relancer pour ces critères');
+    }
+
+    const { membershipUrl, ribDocumentUrl } = this.getPaymentInfoForMember();
+    let sent = 0;
+    let failed = 0;
+
+    for (const cotisation of cotisations) {
+      if (cotisation.status === 'paid') {
+        continue;
+      }
+      try {
+        const user = await this.usersService.findOne(cotisation.userId);
+        await this.mailService.sendCotisationReminderEmail(
+          user.email,
+          user.firstName || 'Membre',
+          cotisation.year,
+          Number(cotisation.amount),
+          membershipUrl,
+          ribDocumentUrl,
+        );
+        sent++;
+      } catch (error) {
+        console.error(`Erreur relance cotisation ${cotisation.id}:`, error);
+        failed++;
+      }
+    }
+
+    if (sent === 0 && failed === 0) {
+      throw new BadRequestException('Aucun envoi : toutes les cotisations sélectionnées sont déjà payées');
+    }
+
+    return { sent, failed };
   }
 
   async getStatistics(year?: number) {

@@ -18,6 +18,7 @@ import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { RegisterEventDto } from './dto/register-event.dto';
+import { CreateEventCarpoolDto } from './dto/create-event-carpool.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -105,6 +106,31 @@ export class EventsController {
   @Get(':id/images')
   getImages(@Param('id', ParseIntPipe) id: number) {
     return this.eventsService.getImages(id);
+  }
+
+  @Get(':id/carpool')
+  @UseGuards(JwtAuthGuard)
+  listCarpool(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    return this.eventsService.listCarpoolForEvent(id, req.user.id);
+  }
+
+  @Post(':id/carpool')
+  @UseGuards(JwtAuthGuard)
+  createCarpool(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req,
+    @Body() dto: CreateEventCarpoolDto,
+  ) {
+    return this.eventsService.createCarpoolEntry(id, req.user.id, dto);
+  }
+
+  @Delete('carpool/:carpoolId')
+  @UseGuards(JwtAuthGuard)
+  removeCarpool(
+    @Param('carpoolId', ParseIntPipe) carpoolId: number,
+    @Request() req,
+  ) {
+    return this.eventsService.removeCarpoolEntry(carpoolId, req.user.id);
   }
 
   @Get(':id')

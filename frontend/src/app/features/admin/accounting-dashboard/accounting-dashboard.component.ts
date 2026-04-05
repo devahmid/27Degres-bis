@@ -27,6 +27,9 @@ export class AccountingDashboardComponent implements OnInit {
   summary: YearlySummary | null = null;
   comparison: any = null;
   loading = true;
+  openingAmount = 0;
+  openingNote = '';
+  savingOpening = false;
   loadingComparison = false;
   selectedYear: number;
   compareYear: number | null = null;
@@ -81,6 +84,36 @@ export class AccountingDashboardComponent implements OnInit {
         this.loading = false;
       }
     });
+    this.accountingService.getOpeningBalance(this.selectedYear).subscribe({
+      next: (row) => {
+        this.openingAmount = row ? Number(row.amount) : 0;
+        this.openingNote = row?.note ?? '';
+      },
+      error: () => {
+        this.openingAmount = 0;
+        this.openingNote = '';
+      }
+    });
+  }
+
+  saveOpeningBalance(): void {
+    this.savingOpening = true;
+    this.accountingService
+      .setOpeningBalance(this.selectedYear, {
+        amount: this.openingAmount,
+        note: this.openingNote || undefined
+      })
+      .subscribe({
+        next: () => {
+          this.savingOpening = false;
+          this.notification.showSuccess('Report de trésorerie enregistré');
+          this.loadSummary();
+        },
+        error: () => {
+          this.savingOpening = false;
+          this.notification.showError('Erreur lors de l\'enregistrement');
+        }
+      });
   }
 
   loadComparison(): void {
