@@ -5,13 +5,67 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class MailService {
   constructor(private mailerService: MailerService) {}
 
+  private wrapHtmlDocument(content: string): string {
+    if (/<html[\s>]/i.test(content)) {
+      return content;
+    }
+    return `<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body style="margin:0;padding:0;">
+    ${content}
+  </body>
+</html>`;
+  }
+
+  private htmlToText(html: string): string {
+    return html
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n\n')
+      .replace(/<\/div>/gi, '\n')
+      .replace(/<\/h[1-6]>/gi, '\n\n')
+      .replace(/<li>/gi, '- ')
+      .replace(/<\/li>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  private async sendRichMail(options: any): Promise<void> {
+    const html = options.html ? this.wrapHtmlDocument(options.html) : undefined;
+    const text = options.text ?? (html ? this.htmlToText(html) : undefined);
+    const frontendUrl = process.env.FRONTEND_URL || 'https://27degres-basseville.fr';
+
+    await this.mailerService.sendMail({
+      ...options,
+      html,
+      text,
+      headers: {
+        ...options.headers,
+        'List-Unsubscribe': `<${frontendUrl}/member/profile>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click-Unsubscribe',
+      },
+    });
+  }
+
   async sendContactEmail(contactData: {
     name: string;
     email: string;
     subject: string;
     message: string;
   }): Promise<void> {
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: process.env.CONTACT_EMAIL || process.env.SMTP_USER,
       subject: `[Contact] ${contactData.subject}`,
       replyTo: contactData.email, // Permet de répondre directement à l'expéditeur
@@ -35,7 +89,7 @@ export class MailService {
   async sendPasswordResetEmail(email: string, resetToken: string, resetUrl: string): Promise<void> {
     const frontendUrl = process.env.FRONTEND_URL || 'https://27degres-basseville.fr';
     
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: email,
       subject: 'Réinitialisation de votre mot de passe - Association 27 Degrés',
       html: `
@@ -66,7 +120,7 @@ export class MailService {
   async sendWelcomeEmail(email: string, firstName: string): Promise<void> {
     const frontendUrl = process.env.FRONTEND_URL || 'https://27degres-basseville.fr';
     
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: email,
       subject: 'Bienvenue à l\'Association 27 Degrés',
       html: `
@@ -91,7 +145,7 @@ export class MailService {
   async sendOrderConfirmationEmail(email: string, orderId: number, orderTotal: number): Promise<void> {
     const frontendUrl = process.env.FRONTEND_URL || 'https://27degres-basseville.fr';
     
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: email,
       subject: `Confirmation de commande #${orderId} - Association 27 Degrés`,
       html: `
@@ -117,7 +171,7 @@ export class MailService {
   }
 
   async sendMemberMessage(email: string, subject: string, message: string, fromName?: string): Promise<void> {
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: email,
       subject: subject,
       html: `
@@ -136,7 +190,6 @@ export class MailService {
       `,
       // Headers supplémentaires pour éviter les spams
       headers: {
-        'Precedence': 'bulk',
         'X-Auto-Response-Suppress': 'All',
       },
     });
@@ -181,13 +234,13 @@ export class MailService {
       volunteerText = `<p><strong>Vous vous êtes porté volontaire pour:</strong> ${activities}</p>`;
     }
 
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: email,
       subject: `Confirmation d'inscription - ${eventTitle}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #E94E1B;">Confirmation d'inscription</h2>
-          <p>Bonjour ${firstName},</p>
+          <p>Assalam aalaykoum ${firstName},</p>
           <p>Votre inscription à l'événement <strong>${eventTitle}</strong> a été confirmée avec succès !</p>
           
           <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -223,13 +276,13 @@ export class MailService {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
     const eventLink = eventUrl || `${frontendUrl}/events/${eventStartDate}`;
 
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: email,
       subject: `Nouvel événement : ${eventTitle}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #E94E1B;">Nouvel événement disponible !</h2>
-          <p>Bonjour ${firstName},</p>
+          <p>Assalam aalaykoum ${firstName},</p>
           <p>Un nouvel événement vient d'être ajouté à l'agenda de l'association :</p>
           
           <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -263,13 +316,13 @@ export class MailService {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
     const receiptLink = receiptUrl || `${frontendUrl}/member/membership`;
 
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: email,
       subject: `Confirmation de cotisation ${year} - Association 27 Degrés`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #E94E1B;">Confirmation de paiement</h2>
-          <p>Bonjour ${firstName},</p>
+          <p>Assalam aalaykoum ${firstName},</p>
           <p>Votre cotisation pour l'année <strong>${year}</strong> a été enregistrée avec succès.</p>
           
           <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -308,13 +361,13 @@ export class MailService {
          <p style="color:#666;font-size:12px;">Si le bouton ne fonctionne pas, copiez ce lien : ${ribDocumentUrl}</p>`
       : '<p style="color:#666;">Les coordonnées de paiement sont disponibles sur votre espace membre après connexion.</p>';
 
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: email,
       subject: `Rappel : cotisation ${year} - Association 27 Degrés`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #E94E1B;">Rappel de cotisation</h2>
-          <p>Bonjour ${firstName},</p>
+          <p>Assalam aalaykoum ${firstName},</p>
           <p>Nous vous rappelons que votre cotisation pour l'année <strong>${year}</strong> 
           d'un montant de <strong>${amount.toFixed(2)} €</strong> n'est pas encore enregistrée comme payée.</p>
           <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -345,13 +398,13 @@ export class MailService {
     const frontendUrl = process.env.FRONTEND_URL || 'https://27degres-basseville.fr';
     const unsubscribeUrl = `${frontendUrl}/member/profile`;
     
-    await this.mailerService.sendMail({
+    await this.sendRichMail({
       to: email,
       subject: subject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #E94E1B;">${subject}</h2>
-          <p>Bonjour ${firstName},</p>
+          <p>Assalam aalaykoum ${firstName},</p>
           <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
             ${message.replace(/\n/g, '<br>')}
           </div>
@@ -366,11 +419,8 @@ export class MailService {
           </p>
         </div>
       `,
-      // Headers pour emails en masse
       headers: {
-        'Precedence': 'bulk',
         'X-Auto-Response-Suppress': 'All',
-        'Auto-Submitted': 'auto-generated',
       },
     });
   }
