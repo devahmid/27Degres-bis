@@ -167,19 +167,34 @@
           <mat-radio-button value="seek">Je cherche une place</mat-radio-button>
         </mat-radio-group>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Départ (ville / zone)</mat-label>
-            <input matInput [(ngModel)]="cpDeparture" placeholder="Ex. : Caen nord" />
-          </mat-form-field>
-          <mat-form-field appearance="outline" class="w-full" *ngIf="cpKind === 'offer'">
-            <mat-label>Places disponibles</mat-label>
-            <input matInput type="number" min="1" [(ngModel)]="cpSeats" />
-          </mat-form-field>
+          <div class="w-full">
+            <label class="block text-sm font-medium text-gray-700 mb-2" for="cp-departure">Départ (ville / zone)</label>
+            <input
+              id="cp-departure"
+              type="text"
+              class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-dark shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [(ngModel)]="cpDeparture"
+              placeholder="Ex. : Caen nord" />
+          </div>
+          <div class="w-full" *ngIf="cpKind === 'offer'">
+            <label class="block text-sm font-medium text-gray-700 mb-2" for="cp-seats">Places disponibles</label>
+            <input
+              id="cp-seats"
+              type="number"
+              min="1"
+              class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-dark shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [(ngModel)]="cpSeats" />
+          </div>
         </div>
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Commentaire (optionnel)</mat-label>
-          <textarea matInput rows="2" [(ngModel)]="cpComment" placeholder="Horaire, précisions…"></textarea>
-        </mat-form-field>
+        <div class="w-full">
+          <label class="block text-sm font-medium text-gray-700 mb-2" for="cp-comment">Commentaire (optionnel)</label>
+          <textarea
+            id="cp-comment"
+            rows="2"
+            class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-dark shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+            [(ngModel)]="cpComment"
+            placeholder="Horaire, précisions…"></textarea>
+        </div>
         <button mat-raised-button color="primary" type="button" (click)="submitCarpool(event.id)" [disabled]="carpoolSubmitting">
           Publier mon annonce
         </button>
