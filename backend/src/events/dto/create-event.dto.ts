@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsDateString, IsNumber, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsDateString, IsNumber, IsEnum, IsBoolean } from 'class-validator';
 
 export class CreateEventDto {
   @IsString()
@@ -44,6 +44,10 @@ export class CreateEventDto {
   @IsNumber()
   @IsOptional()
   createdBy?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  feedbackOpen?: boolean;
 }
 
 

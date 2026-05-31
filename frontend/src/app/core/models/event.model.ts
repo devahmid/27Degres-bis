@@ -10,6 +10,7 @@ export interface Event {
   maxParticipants?: number;
   featuredImage?: string;
   status: 'draft' | 'published' | 'cancelled';
+  feedbackOpen?: boolean;
   createdBy?: number;
   createdAt: Date;
   updatedAt: Date;

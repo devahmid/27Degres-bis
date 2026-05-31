@@ -6,8 +6,10 @@ import { EventRegistration } from './entities/event-registration.entity';
 import { EventImage } from './entities/event-image.entity';
 import { EventCarpool } from './entities/event-carpool.entity';
 import { CreateEventCarpoolDto } from './dto/create-event-carpool.dto';
+import { EventFeedback } from './entities/event-feedback.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { CreateEventFeedbackDto } from './dto/create-event-feedback.dto';
 import { SupabaseService } from '../storage/supabase.service';
 import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
@@ -24,6 +26,8 @@ export class EventsService {
     private eventImagesRepository: Repository<EventImage>,
     @InjectRepository(EventCarpool)
     private carpoolRepository: Repository<EventCarpool>,
+    @InjectRepository(EventFeedback)
+    private feedbackRepository: Repository<EventFeedback>,
     private supabaseService: SupabaseService,
     private mailService: MailService,
     private usersService: UsersService,
@@ -558,6 +562,138 @@ export class EventsService {
       throw new BadRequestException('Vous ne pouvez supprimer que vos propres annonces.');
     }
     await this.carpoolRepository.remove(row);
+  }
+
+  private isEventPast(event: Event): boolean {
+    const referenceDate = event.endDate || event.startDate;
+    return new Date(referenceDate) < new Date();
+  }
+
+  async submitFeedback(
+    eventId: number,
+    userId: number,
+    dto: CreateEventFeedbackDto,
+  ): Promise<EventFeedback> {
+    const event = await this.eventsRepository.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${eventId} introuvable`);
+    }
+    if (event.status !== 'published') {
+      throw new BadRequestException('Le questionnaire n\'est pas disponible pour cet événement.');
+    }
+    if (!event.feedbackOpen) {
+      throw new BadRequestException('Le questionnaire de retour n\'est pas encore ouvert pour cet événement.');
+    }
+    if (!this.isEventPast(event)) {
+      throw new BadRequestException('Le questionnaire sera disponible une fois l\'événement terminé.');
+    }
+
+    const existing = await this.feedbackRepository.findOne({
+      where: { eventId, userId },
+    });
+    if (existing) {
+      throw new ConflictException('Vous avez déjà répondu au questionnaire pour cet événement.');
+    }
+
+    const feedback = this.feedbackRepository.create({
+      eventId,
+      userId,
+      ...dto,
+    });
+    return this.feedbackRepository.save(feedback);
+  }
+
+  async getMyFeedback(eventId: number, userId: number) {
+    const feedback = await this.feedbackRepository.findOne({
+      where: { eventId, userId },
+    });
+    return { submitted: !!feedback, feedback: feedback || null };
+  }
+
+  async getPendingFeedbackEvents(userId: number) {
+    const events = await this.eventsRepository.find({
+      where: { status: 'published', feedbackOpen: true },
+      order: { endDate: 'DESC', startDate: 'DESC' },
+    });
+
+    const pastEvents = events.filter((event) => this.isEventPast(event));
+    const submittedFeedbacks = await this.feedbackRepository.find({
+      where: { userId },
+      select: ['eventId'],
+    });
+    const submittedEventIds = new Set(submittedFeedbacks.map((f) => f.eventId));
+
+    return pastEvents
+      .filter((event) => !submittedEventIds.has(event.id))
+      .map((event) => ({
+        id: event.id,
+        title: event.title,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        location: event.location,
+        type: event.type,
+        featuredImage: event.featuredImage,
+      }));
+  }
+
+  async getEventFeedbacks(eventId: number) {
+    const event = await this.eventsRepository.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${eventId} introuvable`);
+    }
+
+    const feedbacks = await this.feedbackRepository.find({
+      where: { eventId },
+      relations: ['user'],
+      order: { createdAt: 'DESC' },
+    });
+
+    const stats = feedbacks.length > 0 ? {
+      count: feedbacks.length,
+      averageOverall: this.averageRating(feedbacks, 'overallRating'),
+      averageOrganization: this.averageRating(feedbacks, 'organizationRating'),
+      averageAtmosphere: this.averageRating(feedbacks, 'atmosphereRating'),
+      averageCommunityImpact: this.averageRating(feedbacks, 'communityImpactRating'),
+      recommendRate: Math.round(
+        (feedbacks.filter((f) => f.wouldRecommend).length / feedbacks.length) * 100,
+      ),
+    } : { count: 0 };
+
+    return {
+      stats,
+      feedbacks: feedbacks.map((f) => ({
+        id: f.id,
+        user: {
+          id: f.user.id,
+          firstName: f.user.firstName,
+          lastName: f.user.lastName,
+          email: f.user.email,
+        },
+        overallRating: f.overallRating,
+        organizationRating: f.organizationRating,
+        atmosphereRating: f.atmosphereRating,
+        communityImpactRating: f.communityImpactRating,
+        highlights: f.highlights,
+        improvements: f.improvements,
+        wouldRecommend: f.wouldRecommend,
+        additionalComments: f.additionalComments,
+        createdAt: f.createdAt,
+      })),
+    };
+  }
+
+  async toggleFeedbackOpen(eventId: number, open: boolean): Promise<Event> {
+    const event = await this.eventsRepository.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${eventId} introuvable`);
+    }
+    event.feedbackOpen = open;
+    return this.eventsRepository.save(event);
+  }
+
+  private averageRating(feedbacks: EventFeedback[], field: keyof EventFeedback): number {
+    const sum = feedbacks.reduce((acc, f) => acc + (f[field] as number), 0);
+    return Math.round((sum / feedbacks.length) * 10) / 10;
   }
 }
 

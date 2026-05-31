@@ -55,6 +55,9 @@ export class Event {
   })
   status: 'draft' | 'published' | 'cancelled';
 
+  @Column({ name: 'feedback_open', default: false })
+  feedbackOpen: boolean;
+
   @Column({ name: 'created_by', nullable: true })
   createdBy?: number;
 

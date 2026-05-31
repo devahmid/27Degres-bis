@@ -68,6 +68,8 @@ export class EventDetailComponent implements OnInit {
   cpSeats = 1;
   cpComment = '';
   carpoolSubmitting = false;
+  feedbackSubmitted = false;
+  checkingFeedback = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -86,6 +88,7 @@ export class EventDetailComponent implements OnInit {
       if (this.authService.isLoggedIn()) {
         this.checkRegistrationStatus(id);
         this.loadRegistrations(id);
+        this.checkFeedbackStatus(id);
       }
     }
   }
@@ -173,6 +176,20 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
+  checkFeedbackStatus(eventId: number): void {
+    this.checkingFeedback = true;
+    this.eventsService.getMyFeedback(eventId).subscribe({
+      next: (response) => {
+        this.feedbackSubmitted = response.submitted;
+        this.checkingFeedback = false;
+      },
+      error: () => {
+        this.feedbackSubmitted = false;
+        this.checkingFeedback = false;
+      },
+    });
+  }
+
   submitCarpool(eventId: number): void {
     const departure = this.cpDeparture.trim();
     if (departure.length < 2) {
@@ -221,6 +238,11 @@ export class EventDetailComponent implements OnInit {
   isOwnCarpoolEntry(entry: EventCarpoolEntry): boolean {
     const u = this.authService.getCurrentUser();
     return !!u && u.id === entry.user.id;
+  }
+
+  isEventPast(event: Event): boolean {
+    const ref = event.endDate || event.startDate;
+    return new Date(ref) < new Date();
   }
 
   registerForEvent(event: Event): void {

@@ -12,6 +12,7 @@ import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
 import { AddEventDialogComponent } from './add-event-dialog.component';
 import { ManageEventImagesDialogComponent } from './manage-event-images-dialog.component';
 import { EventRegistrationsDialogComponent } from './event-registrations-dialog.component';
+import { EventFeedbacksDialogComponent } from './event-feedbacks-dialog.component';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
@@ -330,5 +331,34 @@ export class EventsManagementComponent implements OnInit, OnDestroy {
       maxWidth: '800px',
       data: event
     });
+  }
+
+  viewFeedbacks(event: Event): void {
+    this.closeMenus();
+    this.dialog.open(EventFeedbacksDialogComponent, {
+      width: '90%',
+      maxWidth: '900px',
+      data: event,
+    });
+  }
+
+  toggleFeedback(event: Event): void {
+    this.closeMenus();
+    const action = event.feedbackOpen ? 'fermer' : 'ouvrir';
+    if (confirm(`Voulez-vous ${action} le questionnaire de retour pour "${event.title}" ?`)) {
+      this.eventsService.toggleFeedbackOpen(event.id, !event.feedbackOpen).subscribe({
+        next: () => {
+          this.notification.showSuccess(
+            event.feedbackOpen
+              ? 'Questionnaire fermé.'
+              : 'Questionnaire ouvert ! Les membres connectés peuvent maintenant répondre.',
+          );
+          this.loadEvents();
+        },
+        error: () => {
+          this.notification.showError('Erreur lors de la modification du questionnaire.');
+        },
+      });
+    }
   }
 }

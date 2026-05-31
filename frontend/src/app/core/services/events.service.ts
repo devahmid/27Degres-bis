@@ -15,6 +15,7 @@ export interface Event {
   maxParticipants?: number;
   featuredImage?: string;
   status: 'draft' | 'published' | 'cancelled';
+  feedbackOpen?: boolean;
   createdBy?: number;
   creator?: {
     id: number;
@@ -196,6 +197,26 @@ export class EventsService {
    */
   updateRegistration(registrationId: number, updateData: any): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/registrations/${registrationId}`, updateData);
+  }
+
+  submitFeedback(eventId: number, feedbackData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${eventId}/feedback`, feedbackData);
+  }
+
+  getMyFeedback(eventId: number): Observable<{ submitted: boolean; feedback: any }> {
+    return this.http.get<{ submitted: boolean; feedback: any }>(`${this.apiUrl}/${eventId}/feedback/mine`);
+  }
+
+  getPendingFeedbackEvents(): Observable<Event[]> {
+    return this.http.get<Event[]>(`${this.apiUrl}/feedback/pending`);
+  }
+
+  getEventFeedbacks(eventId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${eventId}/feedback`);
+  }
+
+  toggleFeedbackOpen(eventId: number, open: boolean): Observable<Event> {
+    return this.http.patch<Event>(`${this.apiUrl}/${eventId}/feedback/toggle`, { open });
   }
 
   getEventCarpool(eventId: number): Observable<EventCarpoolEntry[]> {

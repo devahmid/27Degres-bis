@@ -1,0 +1,36 @@
+.star-btn {
+  background: none;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: #d1d5db;
+
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+
+  &:hover {
+    border-color: #F5B800;
+    color: #F5B800;
+    transform: scale(1.05);
+  }
+
+  &.active {
+    border-color: #E94E1B;
+    background: #fff7ed;
+    color: #E94E1B;
+  }
+}
+
+.rating-section {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}

@@ -19,6 +19,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { RegisterEventDto } from './dto/register-event.dto';
 import { CreateEventCarpoolDto } from './dto/create-event-carpool.dto';
+import { CreateEventFeedbackDto } from './dto/create-event-feedback.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -73,6 +74,12 @@ export class EventsController {
     return this.eventsService.getUserRegistrations(req.user.id);
   }
 
+  @Get('feedback/pending')
+  @UseGuards(JwtAuthGuard)
+  getPendingFeedback(@Request() req) {
+    return this.eventsService.getPendingFeedbackEvents(req.user.id);
+  }
+
   @Delete('images/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'bureau')
@@ -101,6 +108,39 @@ export class EventsController {
   async isRegistered(@Param('id', ParseIntPipe) id: number, @Request() req) {
     const registered = await this.eventsService.isRegistered(id, req.user.id);
     return { registered };
+  }
+
+  @Get(':id/feedback/mine')
+  @UseGuards(JwtAuthGuard)
+  getMyFeedback(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    return this.eventsService.getMyFeedback(id, req.user.id);
+  }
+
+  @Post(':id/feedback')
+  @UseGuards(JwtAuthGuard)
+  submitFeedback(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req,
+    @Body() dto: CreateEventFeedbackDto,
+  ) {
+    return this.eventsService.submitFeedback(id, req.user.id, dto);
+  }
+
+  @Get(':id/feedback')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'bureau')
+  getEventFeedbacks(@Param('id', ParseIntPipe) id: number) {
+    return this.eventsService.getEventFeedbacks(id);
+  }
+
+  @Patch(':id/feedback/toggle')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'bureau')
+  toggleFeedback(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('open') open: boolean,
+  ) {
+    return this.eventsService.toggleFeedbackOpen(id, open);
   }
 
   @Get(':id/images')

@@ -1,4 +1,22 @@
 <div class="max-w-6xl mx-auto px-4">
+
+  <!-- Questionnaires en attente -->
+  <div *ngIf="(pendingFeedback$ | async)?.length" class="mb-6">
+    <div *ngFor="let event of pendingFeedback$ | async"
+         class="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-xl p-5 mb-3 flex flex-col sm:flex-row items-center gap-4">
+      <mat-icon class="text-3xl text-primary">rate_review</mat-icon>
+      <div class="flex-grow text-center sm:text-left">
+        <p class="font-bold text-dark">{{ event.title }}</p>
+        <p class="text-sm text-gray-600">
+          L'événement est terminé — partagez votre retour pour nous aider à améliorer les prochaines éditions.
+        </p>
+      </div>
+      <a mat-raised-button color="primary" [routerLink]="['/events', event.id, 'feedback']">
+        Donner mon avis
+      </a>
+    </div>
+  </div>
+
   <div class="grid lg:grid-cols-3 gap-8">
   
   <!-- Main Content -->

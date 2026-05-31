@@ -146,6 +146,18 @@
                 </button>
                 <button 
                   class="menu-item w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  (click)="toggleFeedback(event)">
+                  <mat-icon class="text-lg">{{ event.feedbackOpen ? 'lock' : 'rate_review' }}</mat-icon>
+                  <span>{{ event.feedbackOpen ? 'Fermer le questionnaire' : 'Ouvrir le questionnaire' }}</span>
+                </button>
+                <button 
+                  class="menu-item w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  (click)="viewFeedbacks(event)">
+                  <mat-icon class="text-lg">feedback</mat-icon>
+                  <span>Voir les retours</span>
+                </button>
+                <button 
+                  class="menu-item w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
                   (click)="manageImages(event)">
                   <mat-icon class="text-lg">photo_library</mat-icon>
                   <span>Gérer les images</span>

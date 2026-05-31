@@ -1,0 +1,194 @@
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+
+  <!-- Chargement -->
+  <div *ngIf="loading" class="text-center py-16">
+    <mat-icon class="text-5xl text-gray-400 animate-spin">refresh</mat-icon>
+    <p class="mt-4 text-gray-600">Chargement...</p>
+  </div>
+
+  <!-- Questionnaire fermé -->
+  <mat-card *ngIf="!loading && event && !event.feedbackOpen" class="text-center p-8">
+    <mat-icon class="text-5xl text-gray-400 mb-4">lock</mat-icon>
+    <h2 class="text-2xl font-bold text-dark mb-2">Questionnaire non disponible</h2>
+    <p class="text-gray-600 mb-6">Le questionnaire de retour n'est pas encore ouvert pour cet événement.</p>
+    <a mat-raised-button color="primary" [routerLink]="['/events', event.id]">
+      Retour à l'événement
+    </a>
+  </mat-card>
+
+  <!-- Déjà répondu -->
+  <mat-card *ngIf="!loading && event && event.feedbackOpen && alreadySubmitted" class="text-center p-8">
+    <mat-icon class="text-5xl text-green-500 mb-4">check_circle</mat-icon>
+    <h2 class="text-2xl font-bold text-dark mb-2">Merci pour votre retour !</h2>
+    <p class="text-gray-600 mb-2">Vous avez déjà répondu au questionnaire pour</p>
+    <p class="text-lg font-semibold text-primary mb-6">{{ event.title }}</p>
+    <p class="text-gray-600 mb-6">
+      Votre avis compte énormément pour nous aider à améliorer nos prochains événements
+      et à renforcer les liens au sein de notre communauté.
+    </p>
+    <a mat-raised-button color="primary" routerLink="/member/dashboard">
+      Retour à mon espace
+    </a>
+  </mat-card>
+
+  <!-- Confirmation après envoi -->
+  <mat-card *ngIf="submittedSuccessfully && event" class="text-center p-8">
+    <div class="mb-6">
+      <mat-icon class="text-6xl text-green-500">favorite</mat-icon>
+    </div>
+    <h2 class="text-3xl font-bold text-dark mb-4">Merci pour votre participation !</h2>
+    <p class="text-lg text-gray-700 mb-4 leading-relaxed">
+      Votre retour sur <strong>{{ event.title }}</strong> a bien été enregistré.
+    </p>
+    <div class="bg-orange-50 border border-orange-200 rounded-xl p-6 mb-6 text-left">
+      <p class="text-gray-700 leading-relaxed">
+        Ces moments partagés sont au cœur de ce que nous sommes en tant qu'association.
+        Chaque événement — weekend, réunion ou activité — est une occasion précieuse
+        de renforcer les liens entre nos membres, de créer des souvenirs communs
+        et de maintenir vivante notre communauté.
+      </p>
+      <p class="text-gray-700 leading-relaxed mt-3">
+        Grâce à vos retours sincères, nous pourrons continuer à améliorer l'expérience
+        pour tous et faire de chaque rencontre un moment encore plus enrichissant.
+      </p>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <a mat-raised-button color="primary" routerLink="/member/dashboard">
+        Retour à mon espace
+      </a>
+      <a mat-stroked-button color="primary" routerLink="/events">
+        Voir les événements
+      </a>
+    </div>
+  </mat-card>
+
+  <!-- Formulaire -->
+  <div *ngIf="!loading && event && event.feedbackOpen && !alreadySubmitted && !submittedSuccessfully">
+
+    <!-- En-tête de remerciement -->
+    <div class="bg-gradient-to-r from-primary to-secondary text-white rounded-xl p-8 mb-6">
+      <div class="flex items-start gap-4">
+        <mat-icon class="text-4xl opacity-90 mt-1">rate_review</mat-icon>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold mb-3">Votre avis compte !</h1>
+          <p class="text-lg opacity-95 leading-relaxed mb-3">
+            Merci d'avoir participé à <strong>{{ event.title }}</strong>
+            <span *ngIf="event.endDate"> ({{ event.startDate | dateFormat:'dd MMMM' }} – {{ event.endDate | dateFormat:'dd MMMM yyyy' }})</span>.
+          </p>
+          <p class="opacity-90 leading-relaxed">
+            Ces rencontres sont essentielles pour notre association : elles tissent des liens,
+            renforcent notre communauté et perpétuent l'esprit 27 Degrés.
+            Prenez quelques minutes pour nous faire part de votre ressenti —
+            chaque retour nous aide à construire des événements encore meilleurs.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <mat-card>
+      <mat-card-content class="p-6">
+        <form [formGroup]="feedbackForm" (ngSubmit)="onSubmit()" class="space-y-8">
+
+          <!-- Notes par étoiles -->
+          <div *ngFor="let field of ratingFields" class="rating-section">
+            <div class="mb-3">
+              <h3 class="text-lg font-semibold text-dark">{{ field.label }} <span class="text-red-500">*</span></h3>
+              <p class="text-sm text-gray-500">{{ field.description }}</p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button
+                *ngFor="let star of [1, 2, 3, 4, 5]"
+                type="button"
+                class="star-btn"
+                [class.active]="getRating(field.key) !== null && star <= (getRating(field.key) || 0)"
+                (click)="setRating(field.key, star)"
+                [attr.aria-label]="star + ' étoile' + (star > 1 ? 's' : '')">
+                <mat-icon>{{ getRating(field.key) !== null && star <= (getRating(field.key) || 0) ? 'star' : 'star_border' }}</mat-icon>
+              </button>
+            </div>
+            <p *ngIf="feedbackForm.get(field.key)?.invalid && feedbackForm.get(field.key)?.touched"
+               class="text-red-500 text-sm mt-1 flex items-center gap-1">
+              <mat-icon class="text-sm">error</mat-icon>
+              Veuillez attribuer une note
+            </p>
+          </div>
+
+          <!-- Points positifs -->
+          <div>
+            <label class="block text-dark font-semibold mb-2">
+              <mat-icon class="align-middle text-green-600 mr-1">thumb_up</mat-icon>
+              Qu'avez-vous particulièrement apprécié ?
+            </label>
+            <textarea
+              formControlName="highlights"
+              rows="3"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              placeholder="Les moments forts, les activités, les rencontres…"></textarea>
+          </div>
+
+          <!-- Améliorations -->
+          <div>
+            <label class="block text-dark font-semibold mb-2">
+              <mat-icon class="align-middle text-orange-600 mr-1">build</mat-icon>
+              Que pourrait-on améliorer ? <span class="text-red-500">*</span>
+            </label>
+            <textarea
+              formControlName="improvements"
+              rows="4"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              placeholder="Vos suggestions concrètes pour les prochaines éditions…"></textarea>
+            <p *ngIf="feedbackForm.get('improvements')?.invalid && feedbackForm.get('improvements')?.touched"
+               class="text-red-500 text-sm mt-1 flex items-center gap-1">
+              <mat-icon class="text-sm">error</mat-icon>
+              Merci de nous donner au moins quelques mots (10 caractères minimum)
+            </p>
+          </div>
+
+          <!-- Recommandation -->
+          <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
+            <label class="block text-dark font-semibold mb-4">
+              Recommanderiez-vous cet événement à d'autres membres ? <span class="text-red-500">*</span>
+            </label>
+            <mat-radio-group formControlName="wouldRecommend" class="flex flex-col sm:flex-row gap-4">
+              <mat-radio-button [value]="true">
+                <span class="ml-2 font-medium">Oui, sans hésiter</span>
+              </mat-radio-button>
+              <mat-radio-button [value]="false">
+                <span class="ml-2 font-medium">Non, pas vraiment</span>
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <!-- Commentaires libres -->
+          <div>
+            <label class="block text-dark font-semibold mb-2">
+              <mat-icon class="align-middle text-gray-500 mr-1">chat</mat-icon>
+              Autres remarques (facultatif)
+            </label>
+            <textarea
+              formControlName="additionalComments"
+              rows="3"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              placeholder="Tout ce que vous souhaitez ajouter…"></textarea>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="isSubmitting"
+              class="flex-1">
+              <mat-icon class="mr-2">send</mat-icon>
+              {{ isSubmitting ? 'Envoi en cours…' : 'Envoyer mon retour' }}
+            </button>
+            <a mat-stroked-button [routerLink]="['/events', event.id]" class="flex-1 text-center">
+              Annuler
+            </a>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
